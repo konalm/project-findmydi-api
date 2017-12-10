@@ -1,5 +1,8 @@
 <?php
 
+use GuzzleHttp\Psr7;
+use GuzzleHttp\Exception\RequestException;
+
 class UserController 
 {
     protected $container;
@@ -19,9 +22,16 @@ class UserController
             return $response->withJson($validate_user_model, 403);
         }
 
+        $postcode_stats = $this->get_long_and_lat($user_details->postcode);
+
+        if (!$postcode_stats) {
+          return $response->withJson('not a valid postcode', 404);
+        }
+
         $stmt = $this->container->db->prepare(
-            "INSERT INTO users (name, email, postcode, range, account_type)
-            VALUES (?,?,?,?,?)"
+            "INSERT INTO users 
+              (name, email, postcode, range, account_type, distance_longitude, distance_latitude)
+              VALUES (?,?,?,?,?,?,?)"
         );
 
         try {
@@ -30,13 +40,31 @@ class UserController
                 $user_details->email, 
                 $user_details->postcode, 
                 $user_details->range,
-                2
+                2,
+                round($postcode_stats->result->longitude, 5),
+                round($postcode_stats->result->latitude, 5)
             ]);
         } catch (Exception $e) {
             return $response->withJson($e, 500);
         }
 
         return $response->withJson('new user added', 200);
+    }
+
+    /**
+     * send postcode to api.postcode.io to check postcode is valid
+     * and return the longitude and latitude
+     */
+    private function get_long_and_lat($postcode) {
+        $client = new \GuzzleHttp\Client();
+
+        try {
+            $res = $client->request('GET', "http://api.postcodes.io/postcodes/${postcode}");
+        } catch (RequestException $e) {
+            return false;
+        }
+
+        return json_decode($res->getBody());
     }
 
 

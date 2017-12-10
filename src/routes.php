@@ -6,7 +6,10 @@ use Slim\Http\Response;
 $controller_path = __DIR__ . '/../src/controllers/';
 
 require $controller_path . 'UserController.php';
-
+require $controller_path . 'SearchController.php';
 
 
 $app->post('/users', '\UserController:save_user');
+
+$app->get('/search-instructors/{postcode}', 
+    '\SearchController:search_instructors');
