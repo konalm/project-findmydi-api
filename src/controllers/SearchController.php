@@ -14,24 +14,9 @@ class SearchController
         $this->postcode_service = new PostcodeService();
     }
 
+  
     /**
-     * 
-     */
-    private function http_request_to_google_matrix_api ($url) {
-        $client = new \GuzzleHttp\Client();
-
-        try {
-            $res = $client->request('GET', $url);
-        } catch (RequestException $e) {
-            return false;
-        }
-
-        $res = json_decode($res->getBody());
-        return $res;
-    }
-
-    /**
-     * search for driving instructors within range of origin
+     * return driving instructors whose range is within origin of postcode
      */
     public function search_instructors ($request, $response, $args) {
         $postcode = $args['postcode'];
@@ -54,43 +39,58 @@ class SearchController
             return $response->withJson('issue sending request to google matrix api', 500);
         }
 
-        $this->get_instructors_in_range($drivers, $maps_res->rows[0]->elements);
+        $instructors_in_range = 
+            $this->get_instructors_in_range($drivers, $maps_res->rows[0]->elements);
 
-        return $response->withJson($maps_res, 200);
+        return $response->withJson($instructors_in_range, 200);
     }
 
+
     /**
-     * 
+     * send http request to google distance matrix api to get distance 
+     * all destinations are from origin
      */
-    private function get_instructors_in_range($instructors, $maps_res) {
-        error_log('get instructors in range');
-        error_log(gettype($maps_res));
+    private function http_request_to_google_matrix_api ($url) {
+        $client = new \GuzzleHttp\Client();
 
-        error_log('maps res -->');
-        error_log(json_encode($maps_res));
-
-        foreach ($instructors as $key => $inst) {
-            error_log('looking at instructor');
-            error_log($inst['range']);
-            error_log('<--------------');
-
-            /* look at the range from origin */ 
-            $maps_data = $maps_res[$key];
-            error_log( json_encode($maps_data) );
-            error_log('------------------>');
-            error_log('<------------------');
+        try {
+            $res = $client->request('GET', $url);
+        } catch (RequestException $e) {
+            return false;
         }
 
+        $res = json_decode($res->getBody());
+        return $res;
     }
 
+
     /**
-     * 
+     * return all instructors who's range is within origin 
+     */
+    private function get_instructors_in_range($instructors, $maps_res) {
+        $instructors_in_range = [];
+
+        foreach ($instructors as $key => $instructor) {
+            if (
+                $instructor['range'] >= 
+                ($maps_res[$key]->distance->value / 1609.34)
+            ) {
+                array_push($instructors_in_range, $instructor);
+            }
+        }
+        
+        return $instructors_in_range;
+    }
+
+
+    /**
+     * get all registered driving instructors
      */
     private function get_drivers () {
         $query_res = 
             $this->container->db
                 ->query(
-                    "SELECT range, distance_longitude, distance_latitude
+                    "SELECT name, email, range, postcode, distance_longitude, distance_latitude
                         FROM public.users 
                         WHERE account_type = 2
                             AND distance_longitude IS NOT NULL
@@ -100,6 +100,7 @@ class SearchController
         
         return $query_res;
     }
+
 
     /**
      * build the url that will be sent to google maps distance matrix api to determine 
