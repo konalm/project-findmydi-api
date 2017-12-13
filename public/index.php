@@ -28,4 +28,7 @@ require __DIR__ . '/../src/dependencies.php';
 // Register routes
 require __DIR__ . '/../src/routes.php';
 
+$dotenv = new Dotenv\Dotenv(__DIR__ . "/../");
+$dotenv->load();
+
 $app->run();

@@ -5,6 +5,9 @@ use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\ValidationData;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
 
+use src\Services\TokenService;
+
+
 class AuthController
 {
   public function __construct (Slim\Container $container) {
@@ -41,17 +44,13 @@ class AuthController
       return $response->withJson('Incorrect Login Details', 401);
     }
 
-    $token = $this->create_jwt_token($user);
-
-    error_log($token);
-    error_log(gettype($token));
+    $token_service = new TokenService();
+    $token = $token_service>create_jwt_token($user);
 
     return $response->withJson([
       'message' => 'Authorization Granted',
       'access_token' => $token
     ]);
-
-    // return $response->withJson($token);
   }
 
 
