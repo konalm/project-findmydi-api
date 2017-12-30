@@ -1,5 +1,9 @@
 <?php 
 
+use App\Controllers\UserController;
+use App\Controllers\AuthController;
+use App\Controllers\ImgController;
+
 $container = $app->getContainer();
 
 // monolog
@@ -27,3 +31,27 @@ $container['db'] = function ($c) {
 
     return $pdo;
 };
+
+/**
+ * get the directory of upload dir in settings
+ */
+$container['getUploadDir'] = function ($c) {
+    return $c['settings']['uploadDir'];
+};
+
+
+/**
+ * inject controllers
+ */
+$container['UserController'] = function($c) {
+  return new UserController($c);
+};
+
+$container['AuthController'] = function($c) {
+  return new AuthController($c);
+};
+
+$container['ImgController'] = function($c) {
+    return new ImgController($c);
+};
+

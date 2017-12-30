@@ -1,6 +1,6 @@
 <?php
 
-namespace Src\Services;
+namespace App\Services;
 
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Parser;
@@ -12,18 +12,23 @@ class TokenService
   /**
    * create a jwt token and sign with the api secret
    */
-  private function create_jwt_token($user) {
+  public function create_jwt_token($user) {
     $signer = new Sha256();
 
+    $enc_user = [
+      'id' => $user['id'],
+      'name' => $user['name'],
+      'email' => $user['email'],
+      'role' => $user['account_type'],
+      'verified' => $user['verified']
+    ];
+
     $token = (new Builder())
-      ->setIssuer('findmydrivinginstructor') // Configures the issuer (iss claim)
-      ->setAudience('http://instructor.io') // Configures the audience (aud claim)
-      ->setId('an10ggam10q', true) // Configures the id (jti claim), replicating as a header item
       ->setIssuedAt(time()) // Configures the time that the token was issue (iat claim)
       ->setNotBefore(time()) // Configures the time that the token can be used (nbf claim)
       ->setExpiration(time() + 3600) // Configures the expiration time of the token (exp claim)
       ->set('uid', 1) // Configures a new claim, called "uid"
-      ->set('user', $user)
+      ->set('user', $enc_user)
       ->sign($signer, getenv('APP_SECRET'))
       ->getToken(); // Retrieves the generated token
 
@@ -35,24 +40,18 @@ class TokenService
    * verify token is validated and verified
    */
   public function verify_token($request) {
-    error_log('verify token');
-
     $signer = new Sha256();
     $token = implode("", $request->getHeader('Authorization'));
 
-    if (!$token) { error_log("no token"); return false; }
+    if (!$token) { return false; }
 
     try {
       $token = (new Parser())->parse((string) $token);
     } catch (Exception $e) {
-      error_log('couldnt parse token');
       return false;
     }
 
     $data = new ValidationData();
-    $data->setIssuer('findmydrivinginstructor');
-    $data->setAudience('http://instructor.io');
-    $data->setId('an10ggam10q');
     $data->setCurrentTime(time());
 
     if (!$token->validate($data)) { return false; }
@@ -62,5 +61,37 @@ class TokenService
     }
 
     return true;
+  }
+
+  /**
+   * verify token is valid and belongs to super admin 
+   */
+  public function verify_super_admin_token($request) {
+    if (!$this->verify_token($request)) {
+      return false; 
+    }
+
+    $user = $this->get_decoded_user($request); 
+
+    if ($user->role !== 222) {
+      return false; 
+    }
+
+    return true;
+  }
+
+  /**
+   * 
+   */
+  public function get_decoded_user($request) {
+    $token = implode("", $request->getHeader('Authorization'));
+
+    try {
+      $token = (new Parser())->parse((string) $token);
+    } catch (Exception $e) {
+      return false;
+    }
+
+    return $token->getClaim('user');
   }
 }

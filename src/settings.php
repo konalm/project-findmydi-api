@@ -4,6 +4,7 @@ return [
     'settings' => [
         'displayErrorDetails' => true, // set to false in production
         'addContentLengthHeader' => false, // Allow the web server to send the content-length header
+        'uploadDir' => __DIR__ . '/uploads/',
 
         // Monolog settings
         'logger' => [
@@ -21,4 +22,4 @@ return [
             'port' => '5432'
         ],
     ],
-];
+]; 

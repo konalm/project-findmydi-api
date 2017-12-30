@@ -1,17 +1,23 @@
 <?php 
 
+namespace App\Controllers;
+
 use Lcobucci\JWT\Builder;
 use Lcobucci\JWT\Parser;
 use Lcobucci\JWT\ValidationData;
 use Lcobucci\JWT\Signer\Hmac\Sha256;
+use \Interop\Container\ContainerInterface as ContainerInterface;
 
-use src\Services\TokenService;
+use App\Repos\UserRepo;
+use App\Services\TokenService;
 
 
 class AuthController
 {
-  public function __construct (Slim\Container $container) {
+  public function __construct (ContainerInterface $container) {
     $this->container = $container;
+    $this->user_repo = new UserRepo($container);
+    $this->token_service = new TokenService($container);
   }
 
   /**
@@ -25,7 +31,7 @@ class AuthController
     try {
       $sth = $this->container->db
           ->prepare(
-            "SELECT id, name, email, password 
+            "SELECT id, name, email, password, account_type, verified
             FROM users WHERE email = ? LIMIT 1"
           );
 
@@ -45,7 +51,7 @@ class AuthController
     }
 
     $token_service = new TokenService();
-    $token = $token_service>create_jwt_token($user);
+    $token = $token_service->create_jwt_token($user);
 
     return $response->withJson([
       'message' => 'Authorization Granted',
@@ -53,50 +59,25 @@ class AuthController
     ]);
   }
 
-
   /**
-   * 
+   * check username and password of user to confirm they are super admin
    */
-  private function create_jwt_token($user) {
-    $signer = new Sha256();
+  public function super_admin_login($request, $response, $args) {
+    $email = trim($request->getParam('username'));
+    $password = trim($request->getParam('password'));
 
-    $token = (new Builder())
-      ->setIssuer('findmydrivinginstructor') // Configures the issuer (iss claim)
-      ->setAudience('http://instructor.io') // Configures the audience (aud claim)
-      ->setId('an10ggam10q', true) // Configures the id (jti claim), replicating as a header item
-      ->setIssuedAt(time()) // Configures the time that the token was issue (iat claim)
-      ->setNotBefore(time()) // Configures the time that the token can be used (nbf claim)
-      ->setExpiration(time() + 3600) // Configures the expiration time of the token (exp claim)
-      ->set('uid', 1) // Configures a new claim, called "uid"
-      ->set('user', $user)
-      ->sign($signer, 'secret')
-      ->getToken(); // Retrieves the generated token
+    $super_admin = $this->user_repo->get_super_admin_where_email($email)['user'];
 
-      return (string)$token;
-  }
-
-
-  /**
-   * 
-   */
-  public function verify_jwt_token($request, $response, $args) {
-    $signer = new Sha256();
-    $token = (new Parser())->parse((string) $request->getParam('token')); 
-
-    $data = new ValidationData();
-    $data->setIssuer('findmydrivinginstructor');
-    $data->setAudience('http://instructor.io');
-    $data->setId('an10ggam10q');
-    $data->setCurrentTime(time());
-
-    if (!$token->validate($data)) {
-      return $response->withJson('token not valid', 406);
+    if (!password_verify($password, $super_admin['password'])) {
+      return $response->withJson('Not Authorized', 406);
     }
 
-    if (!$token->verify($signer, 'secret')) {
-      return $response->withJson('token not verified', 406);
-    }
-    
-    return $response->withJson('authorization granted', 200);
+    $token = $this->token_service->create_jwt_token($super_admin);
+
+    return $response->withJson([
+      'message' => 'Authorization Granted',
+      'access_token' => $token
+    ]);
   }
 }
+
