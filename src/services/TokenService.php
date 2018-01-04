@@ -17,9 +17,8 @@ class TokenService
 
     $enc_user = [
       'id' => $user['id'],
-      'name' => $user['name'],
+      'name' => $user['first_name'],
       'email' => $user['email'],
-      'role' => $user['account_type'],
       'verified' => $user['verified']
     ];
 

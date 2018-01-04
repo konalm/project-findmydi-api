@@ -26,7 +26,7 @@ $app->add(function ($req, $res, $next) {
 require __DIR__ . '/../src/dependencies.php';
 
 // Register routes
-require __DIR__ . '/../src/routes.php';
+require __DIR__ . '/../src/routes/app.php';
 
 $dotenv = new Dotenv\Dotenv(__DIR__ . "/../");
 $dotenv->load();

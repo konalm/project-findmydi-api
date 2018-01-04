@@ -6,9 +6,11 @@ use Slim\Http\Response;
 use App\Services\TokenService;
 
 
-$controller_path = __DIR__ . '/../src/controllers/';
+$controller_path = __DIR__ . '/../../src/controllers/';
 
 require $controller_path . 'SearchController.php';
+
+require __DIR__ . '/instructor.php';
 
 
 $app->get('/user', 'UserController:get_user');

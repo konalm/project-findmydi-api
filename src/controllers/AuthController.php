@@ -31,8 +31,8 @@ class AuthController
     try {
       $sth = $this->container->db
           ->prepare(
-            "SELECT id, name, email, password, account_type, verified
-            FROM users WHERE email = ? LIMIT 1"
+            "SELECT id, first_name, surname, email, verified, password
+            FROM instructors WHERE email = ? LIMIT 1"
           );
 
       $sth->execute(array($email));

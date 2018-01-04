@@ -12,6 +12,7 @@ use App\Repos\UserRepo;
 
 class UserController 
 {
+    
   protected $container;
 
   public function __construct(ContainerInterface $container) {
@@ -140,9 +141,6 @@ class UserController
       $move_to_dir = $this->container->getUploadDir .
         'instructorAvatar/' .
         $avatar_name;
-    
-      error_log('move to dir -->');
-      error_log($move_to_dir);
 
       $avatar->moveTo($move_to_dir);
       $this->user_repo->update_instructor_has_avatar($user->id, 1);
