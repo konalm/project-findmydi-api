@@ -45,9 +45,10 @@ $container['getUploadDir'] = function ($c) {
 $container['InstructorController'] = function ($c) {
   return new InstructorController($c);
 };
+
 $container['InstructorCoverageController'] = function ($c) {
-    return new InstructorCoverageController($c);
-  };
+  return new InstructorCoverageController($c);
+};
 
 $container['UserController'] = function($c) {
   return new UserController($c);
@@ -58,6 +59,6 @@ $container['AuthController'] = function($c) {
 };
 
 $container['ImgController'] = function($c) {
-    return new ImgController($c);
+  return new ImgController($c);
 };
 

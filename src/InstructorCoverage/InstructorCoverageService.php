@@ -13,14 +13,14 @@ class InstructorCoverageService
   /**
    * valdate instructor input recieved from request
    */
-  public function validate_new_instructor_coverage($instructor_coverage) {
+  public function validate_instructor_values($instructor_coverage) {
     if (!$instructor_coverage->postcode) { return 'postcode is required'; }
     if (!$instructor_coverage->range) { return 'range is required'; }
 
     return false;
   }
 
-    /**
+  /**
    * send postcode to api.postcode.io to check postcode is valid
    * and return the longitude and latitude
    */
@@ -28,7 +28,7 @@ class InstructorCoverageService
     $client = new \GuzzleHttp\Client();
 
     try {
-      $res = $client->request(
+      $response= $client->request(
         'GET', 
         "http://api.postcodes.io/postcodes/${postcode}"
       );
@@ -36,7 +36,7 @@ class InstructorCoverageService
       return false;
     }
 
-    return json_decode($res->getBody());
+    $result = json_decode($response->getBody());
+    return $result->result;
   }
-
 }

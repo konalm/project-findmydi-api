@@ -25,7 +25,7 @@ class TokenService
     $token = (new Builder())
       ->setIssuedAt(time()) // Configures the time that the token was issue (iat claim)
       ->setNotBefore(time()) // Configures the time that the token can be used (nbf claim)
-      ->setExpiration(time() + 3600) // Configures the expiration time of the token (exp claim)
+      ->setExpiration(time() + 36000) // Configures the expiration time of the token (exp claim)
       ->set('uid', 1) // Configures a new claim, called "uid"
       ->set('user', $enc_user)
       ->sign($signer, getenv('APP_SECRET'))
@@ -80,7 +80,7 @@ class TokenService
   }
 
   /**
-   * 
+   * abstract user data from the token payload and decode it
    */
   public function get_decoded_user($request) {
     $token = implode("", $request->getHeader('Authorization'));

@@ -18,4 +18,21 @@ class InstructorService
       return false;
     }
 
+    /**
+     * validate instructor input for updating profile
+     */
+    public function validate_instructor_profile($instructor) {
+      if (!$instructor->hourly_rate) { return 'hourly rate is required'; }
+
+      if (!is_numeric($instructor->hourly_rate)) {
+        return 'hourly rate must be a number';
+      }
+
+      if ($instructor->hourly_rate <= 0) {
+        return 'hourly rate must be greater than 0';
+      }
+
+      return false;
+    }
+
 }

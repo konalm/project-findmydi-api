@@ -10,6 +10,7 @@ use \Interop\Container\ContainerInterface as ContainerInterface;
 
 use App\Repos\UserRepo;
 use App\Services\TokenService;
+use App\Services\AuthService; 
 
 
 class AuthController
@@ -18,6 +19,7 @@ class AuthController
     $this->container = $container;
     $this->user_repo = new UserRepo($container);
     $this->token_service = new TokenService($container);
+    $this->service = new AuthService();
   }
 
   /**
@@ -25,8 +27,16 @@ class AuthController
    * return a JWT access token so client can access API
    */
   public function login($request, $response, $args) {
-    $email = trim($request->getParam('email'));
-    $password = trim($request->getParam('password'));
+    $login_details = new \stdClass();
+    $login_details->email = trim($request->getParam('email'));
+    $login_details->password = trim($request->getParam('password'));
+
+    $validate_login_details = 
+      $this->service->validate_login_details($login_details);
+    
+    if ($validate_login_details) {
+      return $response->withJson($validate_login_details, 422);
+    }
 
     try {
       $sth = $this->container->db
@@ -35,7 +45,7 @@ class AuthController
             FROM instructors WHERE email = ? LIMIT 1"
           );
 
-      $sth->execute(array($email));
+      $sth->execute(array($login_details->email));
       $user = $sth->fetch();
 
     } catch (PDOException $e) {
@@ -46,7 +56,7 @@ class AuthController
       return $response->withJson('Incorrect Login Details', 401);
     }
 
-    if (!password_verify($password, $user['password'])) {
+    if (!password_verify($login_details->password, $user['password'])) {
       return $response->withJson('Incorrect Login Details', 401);
     }
 
