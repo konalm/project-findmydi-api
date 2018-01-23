@@ -69,9 +69,7 @@ class InstructorCoverageRepo
 
     try {
       $stmt->execute([$id]);
-    } catch (Exception $e) {
-      return false;
-    }
+    } catch (Exception $e)
   }
 
   /**

@@ -105,4 +105,37 @@ class InstructorController
 
     return $response->withJson('instructor profile updated');
   }
-}
+
+   /**
+     * get profile pic out of request, if no reqest then return error
+     * assign name to profile pic for user id and move to uploads directory
+     */
+    public function update_avatar ($request, $response, $args) {
+      if (!$this->token_service->verify_token($request)) {
+        return $response->withJson('Not Authenticated', 401);
+      }
+
+      $uploaded_files = $request->getUploadedFiles();
+      $avatar = $uploaded_files['file'];
+
+      if (!$avatar) {
+        return $response->withJson('no avatar found', 403);
+      }
+
+      $user_id = $this->token_service->get_decoded_user($request)->id;
+      $avatar_name = $user_id . '.jpg';
+
+      $move_to_dir = $this->container->getUploadDir .
+        'instructorAvatar/' .
+        $avatar_name;
+
+      error_log('saved avatar');
+      error_log($move_to_dir);
+
+      
+      $avatar->moveTo($move_to_dir);
+      $this->repo->update_avatar($user_id, "uploads/instructorAvatar/{$avatar_name}");
+
+      return $response->withJson('saved image', 200);
+    }
+} 

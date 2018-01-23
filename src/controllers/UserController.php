@@ -123,6 +123,8 @@ class UserController
      * assign name to profile pic for user id and move to uploads directory
      */
     public function upload_avatar ($request, $response, $args) {
+      error_log('upload avatar');
+
       if (!$this->token_service->verify_token($request)) {
         return $response->withJson('Not Authenticated', 401);
       }

@@ -14,18 +14,20 @@ class InstructorRepo
   public function get($id) {
     $stmt = $this->container->db->prepare(
       "SELECT instructors.id, first_name, surname, email, adi_license_no, 
-        gender, verified, hourly_rate, offer, array_to_json(array_agg(c.coverage)) AS coverages
+        gender, verified, hourly_rate, offer, avatar_url,
+        array_to_json(array_agg(c.coverage)) AS coverages
       FROM instructors
       LEFT OUTER JOIN 
       (
-        SELECT ic.user_id, json_build_object('postcode', ic.postcode, 'range', ic.range) 
+        SELECT ic.user_id, json_build_object('id', ic.id, 'postcode', 
+          ic.postcode, 'range', ic.range) 
           AS coverage
         FROM instructor_coverage ic
       ) c
         ON instructors.id = c.user_id
       WHERE instructors.id = ?
       GROUP BY instructors.id, first_name, surname, email, adi_license_no, 
-        gender, verified, hourly_rate, offer"
+        gender, verified, hourly_rate, offer, avatar_url"
     );
 
 
@@ -104,5 +106,28 @@ class InstructorRepo
     }
 
     return 'instructor profile updated';
+  }
+
+  /**
+   * update instructor avatar url 
+   */
+  public function update_avatar($id, $avatar_url) {
+    error_log('instructor repo -> update avatar');
+    error_log($avatar_url);
+
+    $stmt = $this->container->db->prepare(
+      'UPDATE instructors 
+        SET avatar_url = ?
+        WHERE id = ?'
+    );
+
+    try {
+      $stmt->execute([
+        $avatar_url,
+        $id 
+      ]);
+    } catch (Exception $e) {
+      return 500;
+    }
   }
 }

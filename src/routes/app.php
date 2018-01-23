@@ -20,7 +20,6 @@ $app->post('/users', 'UserController:save_user');
 $app->put('/instructor-verification/{id}', 'UserController:update_instructor_verification');
 
 $app->post('/verification-details', 'UserController:save_verification_details');
-$app->post('/upload-avatar', 'UserController:upload_avatar');
 
 $app->put('/instructor-coverage', 'UserController:update_instructor_coverage');
 
@@ -40,3 +39,5 @@ $app->post('/jwt-verify', 'AuthController:verify_jwt_token');
 
 $app->get('/img/adi-license/{user_id}', 'ImgController:get_adi_licence_photo');
 $app->get('/img/avatar/{user_id}', 'ImgController:get_instructor_avatar');
+
+$app->get('/img[/{path:.*}]', 'ImgController:serve_image');

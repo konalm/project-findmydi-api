@@ -105,6 +105,7 @@ class InstructorCoverageController
     return $response->withJson('instructor coverage model updated', 200);
   }
 
+  
   /**
    * check instructor is authorized to delete instructor coverage
    * delete instructor coverage
