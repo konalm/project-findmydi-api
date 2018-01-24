@@ -39,12 +39,7 @@ class ImgController
    * serve image response 
    */
   public function serve_image($request, $response, $args) {
-    error_log('serve image !!');
-
     $path = $args['path'];
-
-    error_log($path);
-
     $img = file_get_contents(__DIR__ . '/../' . $path);
 
     $response->write($img);

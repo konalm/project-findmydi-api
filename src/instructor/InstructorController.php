@@ -79,8 +79,6 @@ class InstructorController
    * update instructor profile
    */
   public function update_profile($request, $response, $args) {
-    error_log('update profile'); 
-
     if (!$this->token_service->verify_token($request)) {
       return $response->withJson('Not Authorized', 406);
     }
@@ -89,6 +87,7 @@ class InstructorController
 
     $profile = new \stdClass();
     $profile->hourly_rate = $request->getParam('hourlyRate');
+    $profile->contact_number = $request->getParam('contactNumber');
     $profile->offer = $request->getParam('offer');
 
     $validation = $this->service->validate_instructor_profile($profile);
@@ -105,6 +104,7 @@ class InstructorController
 
     return $response->withJson('instructor profile updated');
   }
+
 
    /**
      * get profile pic out of request, if no reqest then return error
@@ -129,13 +129,22 @@ class InstructorController
         'instructorAvatar/' .
         $avatar_name;
 
-      error_log('saved avatar');
-      error_log($move_to_dir);
-
-      
       $avatar->moveTo($move_to_dir);
       $this->repo->update_avatar($user_id, "uploads/instructorAvatar/{$avatar_name}");
 
       return $response->withJson('saved image', 200);
+    }
+
+    /**
+     * 
+     */
+    public function upload_adi_license_for_review ($request, $response, $args) {
+      error_log('upload adi license for review !!')
+
+      if (!$this->token_service->verify_token($request)) {
+        return $response->withJson('Not Authorized', 406);
+      }
+
+
     }
 } 

@@ -24,6 +24,7 @@ class UserController
     $this->user_repo = new UserRepo($container);
   }
 
+
   /**
    * get user data encoded in jwt token 
    */
@@ -38,6 +39,7 @@ class UserController
 
     return $response->withJson($user, 200);
   }
+
 
   /**
    * get id for user in token and then use it to the the user from the DB
@@ -54,37 +56,38 @@ class UserController
     return $response->withJson($user_from_db);
   }
 
-    /**
-     * create new user model (usually registered driving instructor)
-     */
-    public function save_user ($request, $response, $args) {
-      $user_details = $this->get_user_details($request);
-      $validate_user_model = $this->validate_user_model($user_details);
-      $user_details = $this->clean_user_details($user_details);
 
-      if ($validate_user_model) {
-        return $response->withJson($validate_user_model, 403);
-      }
+  /**
+   * create new user model (usually registered driving instructor)
+   */
+  public function save_user ($request, $response, $args) {
+    $user_details = $this->get_user_details($request);
+    $validate_user_model = $this->validate_user_model($user_details);
+    $user_details = $this->clean_user_details($user_details);
 
-      $stmt = $this->container->db->prepare(
-        "INSERT INTO users 
-          (name, email, password, account_type)
-          VALUES (?,?,?,?)"
-      );
-
-      try {
-        $stmt->execute([
-          $user_details->name, 
-          $user_details->email, 
-          password_hash($user_details->password, PASSWORD_BCRYPT),
-          2,
-        ]);
-      } catch (Exception $e) {
-        return $response->withJson($e, 500);
-      }
-
-      return $response->withJson('new user added', 200);
+    if ($validate_user_model) {
+      return $response->withJson($validate_user_model, 403);
     }
+
+    $stmt = $this->container->db->prepare(
+      "INSERT INTO users 
+        (name, email, password, account_type)
+        VALUES (?,?,?,?)"
+    );
+
+    try {
+      $stmt->execute([
+        $user_details->name, 
+        $user_details->email, 
+        password_hash($user_details->password, PASSWORD_BCRYPT),
+        2,
+      ]);
+    } catch (Exception $e) {
+      return $response->withJson($e, 500);
+    }
+
+    return $response->withJson('new user added', 200);
+  }
 
 
     /**
@@ -123,8 +126,6 @@ class UserController
      * assign name to profile pic for user id and move to uploads directory
      */
     public function upload_avatar ($request, $response, $args) {
-      error_log('upload avatar');
-
       if (!$this->token_service->verify_token($request)) {
         return $response->withJson('Not Authenticated', 401);
       }

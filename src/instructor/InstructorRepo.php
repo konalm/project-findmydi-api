@@ -14,8 +14,8 @@ class InstructorRepo
   public function get($id) {
     $stmt = $this->container->db->prepare(
       "SELECT instructors.id, first_name, surname, email, adi_license_no, 
-        gender, verified, hourly_rate, offer, avatar_url,
-        array_to_json(array_agg(c.coverage)) AS coverages
+        gender, verified, hourly_rate, offer, avatar_url, contact_number,
+        adi_license_verified, array_to_json(array_agg(c.coverage)) AS coverages
       FROM instructors
       LEFT OUTER JOIN 
       (
@@ -27,7 +27,8 @@ class InstructorRepo
         ON instructors.id = c.user_id
       WHERE instructors.id = ?
       GROUP BY instructors.id, first_name, surname, email, adi_license_no, 
-        gender, verified, hourly_rate, offer, avatar_url"
+        gender, verified, hourly_rate, offer, avatar_url, contact_number, 
+        adi_licence_verified"
     );
 
 
@@ -91,13 +92,14 @@ class InstructorRepo
   public function update_profile($id, $new_profile) {
     $stmt = $this->container->db->prepare(
       'UPDATE instructors 
-      SET hourly_rate = ?,  offer = ?
+      SET hourly_rate = ?, contact_number = ?, offer = ?
       WHERE id = ?'
     );
 
     try {
       $stmt->execute([
         $new_profile->hourly_rate,
+        $new_profile->contact_number,
         $new_profile->offer,
         $id
       ]);
@@ -112,9 +114,6 @@ class InstructorRepo
    * update instructor avatar url 
    */
   public function update_avatar($id, $avatar_url) {
-    error_log('instructor repo -> update avatar');
-    error_log($avatar_url);
-
     $stmt = $this->container->db->prepare(
       'UPDATE instructors 
         SET avatar_url = ?
