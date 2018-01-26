@@ -8,6 +8,7 @@ class InstructorRepo
     $this->container = $container; 
   }
 
+
   /**
    * get instructor with $id
    */
@@ -31,7 +32,6 @@ class InstructorRepo
         adi_licence_verified"
     );
 
-
     try {
       $stmt->execute([$id]);
     } catch (Exception $e) {
@@ -40,6 +40,7 @@ class InstructorRepo
 
     return $stmt->fetch();
   }
+
 
   /**
    * save instructor model 
@@ -86,6 +87,7 @@ class InstructorRepo
     return $stmt->fetch();
   }
 
+
   /**
    * update instructor profile (usually just hourly rate & offer)
    */
@@ -110,6 +112,7 @@ class InstructorRepo
     return 'instructor profile updated';
   }
 
+
   /**
    * update instructor avatar url 
    */
@@ -125,6 +128,70 @@ class InstructorRepo
         $avatar_url,
         $id 
       ]);
+    } catch (Exception $e) {
+      return 500;
+    }
+  }
+
+
+  /**
+   * check if adi license model exists 
+   */
+  public function get_adi_licence($instructor_id) {
+    $stmt = $this->container->db->prepare(
+      'SELECT id 
+      FROM instructor_adi_license_verifications 
+      WHERE user_id = ?'
+    );
+
+    try {
+      $stmt->execute([
+        $instructor_id
+      ]);
+    } catch (Exception $e) {
+      return 500; 
+    }
+
+    return $stmt->fetch();
+  }
+
+
+  /**
+   * update adi license for re-review
+   */
+  public function update_adi_licence($instructor_id) {
+    error_log('update adi license');
+    error_log($instructor_id);
+
+    $stmt = $this->container->db->prepare(
+      'UPDATE instructor_adi_license_verifications
+      SET status = 2
+      WHERE user_id = ?'
+    );
+
+    try {
+      $stmt->execute([$instructor_id]);
+    } catch (Exception $e) {
+      error_log('CATCH !!');
+      return 500;
+    }
+
+    error_log('DONE !!');
+  }
+
+
+  /**
+   * create adi license for review 
+   */
+  public function create_adi_licence($instructor_id, $license_src) {
+    $stmt = $this->container->db->prepare(
+      "INSERT INTO instructor_adi_license_verifications
+      (user_id, status, adi_license_src)
+      VALUES (?, ?, ?)"
+    );
+
+    try {
+      $stmt->execute([$instructor_id, 2, $license_src]);
     } catch (Exception $e) {
       return 500;
     }

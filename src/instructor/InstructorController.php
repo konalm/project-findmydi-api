@@ -136,15 +136,36 @@ class InstructorController
     }
 
     /**
-     * 
+     * upload adi license for review  
+     * if adi license upload already exists -> update status to review
+     * if doesn't already exist -> create adi license model 
+     * save adi license image in dir 
      */
-    public function upload_adi_license_for_review ($request, $response, $args) {
-      error_log('upload adi license for review !!')
-
+    public function upload_adi_licence_for_review ($request, $response, $args) {
       if (!$this->token_service->verify_token($request)) {
         return $response->withJson('Not Authorized', 406);
       }
 
+      $user_id = $this->token_service->get_decoded_user($request)->id;
+      $uploaded_files = $request->getUploadedFiles();
+      $adi_license_photo = $uploaded_files['file'];
 
+      if (!$adi_license_photo) {
+        return $response->withJson('no adi license photo found', 403);
+      }
+
+      $move_to_dir = $this->container->getUploadDir . 
+        'adiLicenceVerification/' .
+        $user_id . '.jpg';
+      
+      $adi_license_photo->moveTo($move_to_dir);
+      
+      if ($this->repo->get_adi_licence($user_id)) {
+        $this->repo->update_adi_licence($user_id);
+        return $response->withJson('resubmitted adi licence for review');
+      } 
+
+      $this->repo->create_adi_licence($user_id, "uploads/adiLicenceVerification/{$user_id}.jpg");
+      return $response->withJson('submitted adi license for review');
     }
 } 
