@@ -11,6 +11,7 @@ $controller_path = __DIR__ . '/../../src/controllers/';
 require $controller_path . 'SearchController.php';
 
 require __DIR__ . '/instructor.php';
+require __DIR__ . '/superAdmin.php';
 
 
 $app->get('/user', 'UserController:get_user');

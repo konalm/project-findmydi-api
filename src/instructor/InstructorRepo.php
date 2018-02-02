@@ -15,7 +15,8 @@ class InstructorRepo
   public function get($id) {
     $stmt = $this->container->db->prepare(
       "SELECT instructors.id, first_name, surname, email, adi_license_no, 
-        gender, verified, hourly_rate, offer, avatar_url, contact_number,
+        gender, verified, hourly_rate, offer, avatar_url, contact_number, 
+        v.status AS adi_licence_verification,
         adi_license_verified, array_to_json(array_agg(c.coverage)) AS coverages
       FROM instructors
       LEFT OUTER JOIN 
@@ -26,10 +27,12 @@ class InstructorRepo
         FROM instructor_coverage ic
       ) c
         ON instructors.id = c.user_id
+      LEFT JOIN instructor_adi_license_verifications AS v
+        ON v.user_id = instructors.id 
       WHERE instructors.id = ?
       GROUP BY instructors.id, first_name, surname, email, adi_license_no, 
         gender, verified, hourly_rate, offer, avatar_url, contact_number, 
-        adi_licence_verified"
+        adi_license_verified, v.status"
     );
 
     try {
@@ -160,9 +163,6 @@ class InstructorRepo
    * update adi license for re-review
    */
   public function update_adi_licence($instructor_id) {
-    error_log('update adi license');
-    error_log($instructor_id);
-
     $stmt = $this->container->db->prepare(
       'UPDATE instructor_adi_license_verifications
       SET status = 2
@@ -172,11 +172,8 @@ class InstructorRepo
     try {
       $stmt->execute([$instructor_id]);
     } catch (Exception $e) {
-      error_log('CATCH !!');
       return 500;
     }
-
-    error_log('DONE !!');
   }
 
 
@@ -193,6 +190,50 @@ class InstructorRepo
     try {
       $stmt->execute([$instructor_id, 2, $license_src]);
     } catch (Exception $e) {
+      return 500;
+    }
+  }
+
+  
+  /**
+   * get instructors with adi licence status in review
+   */
+  public function get_instructors_in_review() {
+    $stmt = $this->container->db->prepare(
+      "SELECT instructors.id AS id, first_name, surname, adi_license_no, gender,
+        email, contact_number, avatar_url, uv.adi_license_src, uv.id AS adi_licence_id
+      FROM instructors 
+      INNER JOIN instructor_adi_license_verifications AS uv 
+        ON uv.user_id = instructors.id
+      WHERE uv.status = 2"
+    );
+
+    try {
+      $stmt->execute();
+    } catch (PDOException $e) {
+      return false;
+    }
+
+    return $stmt->fetchAll();
+  }
+
+  /**
+   * update instructor adi licence status 
+   */
+  public function update_adi_licence_status($id, $status, $reject_reason) {
+    error_log('update adi licence status');
+
+    $stmt = $this->container->db->prepare(
+      "UPDATE instructor_adi_license_verifications 
+      SET status = ?, reject_reason = ?
+      WHERE id = ?"
+    );
+
+    try {
+      $stmt->execute([$status, $reject_reason, $id]);
+    } catch (PDOException $e) {
+      error_log('ERROR');
+      error_log(json_encode($e));
       return 500;
     }
   }

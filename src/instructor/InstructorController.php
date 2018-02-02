@@ -21,7 +21,7 @@ class InstructorController
     $this->token_service = new TokenService();
   }
 
-  
+ 
   /**
    * get instructor 
    */
@@ -167,5 +167,44 @@ class InstructorController
 
       $this->repo->create_adi_licence($user_id, "uploads/adiLicenceVerification/{$user_id}.jpg");
       return $response->withJson('submitted adi license for review');
+    }
+
+    /**
+     * get instructors with adi photo licence in review 
+     */
+    public function get_instructors_in_review ($request, $response, $args) {
+      if (!$this->token_service->verify_super_admin_token($request)) {
+        return $response->withJson('Not Authorized', 406);
+      }
+
+      $instructors_in_review = $this->repo->get_instructors_in_review();
+
+      return $response->withJson($instructors_in_review, 200);
+    }
+
+    /**
+     * verify user is super admin
+     * update status of instructors adi licence
+     */
+    public function update_adi_licence_status($request, $response, $args) {
+      if (!$this->token_service->verify_super_admin_token($request)) {
+        return $response->withJson('Not Authorized', 406); 
+      }
+
+      if ($validation = $this->service->validate_adi_licence_status_update($request)) {
+        return $response->withJson($validation, 403);
+      }
+
+      $id = $args['id'];
+      $status = $request->getParam('status');
+
+      $reject_reason = $request->getParam('status') == 1 ?
+        $request->getParam('rejectReason') : null; 
+
+      if ($this->repo->update_adi_licence_status($id, $status, $reject_reason) === 500) {
+          return $response->withJson('error updating adi licence status', 500);
+      }
+
+      return $response->withJson('instructor adi licence status updated', 200);
     }
 } 

@@ -45,4 +45,20 @@ class InstructorService
       return false;
     }
 
+    /**
+     * validate adi licence status update 
+     */
+    public function validate_adi_licence_status_update($request) {
+      if ($request->getParam('status') === null) {
+        return 'status is required';
+      }
+
+      if (intval($request->getParam('status')) === 1 && 
+        !$request->getParam('rejectReason')
+      ) {
+        return 'reason is required when rejecting adi licence';
+      }
+
+      return false;
+    }
 }

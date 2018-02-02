@@ -16,7 +16,7 @@ class ImgController
    */
   public function get_adi_licence_photo($request, $response, $args) {
     $img = file_get_contents(
-      __DIR__ . '/../uploads/adiLicenseVerification/' . $args['user_id'] . '.jpg'
+      __DIR__ . '/../uploads/adiLicenceVerification/' . $args['user_id'] . '.jpg'
     );
 
     $response->write($img);

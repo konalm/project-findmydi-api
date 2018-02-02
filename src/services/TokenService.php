@@ -12,15 +12,18 @@ class TokenService
   /**
    * create a jwt token and sign with the api secret
    */
-  public function create_jwt_token($user) {
+  public function create_jwt_token($user, $user_type) {
     $signer = new Sha256();
 
-    $enc_user = [
-      'id' => $user['id'],
-      'name' => $user['first_name'],
-      'email' => $user['email'],
-      'verified' => $user['verified']
-    ];
+    $enc_user = [];
+
+    if ($user_type === 'instructor') { 
+      $enc_user = $this->build_enc_instructor($user); 
+    }
+
+    if ($user_type === 'super_admin') { 
+      $enc_user = $this->build_enc_super_admin($user); 
+    }
 
     $token = (new Builder())
       ->setIssuedAt(time()) // Configures the time that the token was issue (iat claim)
@@ -32,6 +35,31 @@ class TokenService
       ->getToken(); // Retrieves the generated token
 
       return (string)$token;
+  }
+
+
+  /**
+   * build instructor model for encryption 
+   */
+  public function build_enc_instructor($user) {
+    return [
+      'id' => $user['id'],
+      'name' => $user['first_name'],
+      'email' => $user['email'],
+      'verified' => $user['verified']
+    ];
+  }
+
+
+  /**
+   * build super admin model from encryption
+   */
+  public function build_enc_super_admin($user) {
+    return [
+      'id' => $user['id'],
+      'username' => $user['username'],
+      'access_level' => 1000
+    ];
   }
 
 
@@ -70,9 +98,13 @@ class TokenService
       return false; 
     }
 
+    error_log('verified token !!');
+
     $user = $this->get_decoded_user($request); 
 
-    if ($user->role !== 222) {
+    error_log(json_encode($user));
+
+    if ($user->access_level !== 1000) {
       return false; 
     }
 

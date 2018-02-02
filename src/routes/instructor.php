@@ -16,3 +16,7 @@ $app->post('/instructors-coverage', 'InstructorCoverageController:save');
 $app->put('/instructors-coverage/{id}', 'InstructorCoverageController:update');
 $app->delete('/instructors-coverage/{id}', 'InstructorCoverageController:delete');
 
+$app->get('/instructors-in-review', 'InstructorController:get_instructors_in_review');
+
+$app->put('/instructor-adi-licence-status/{id}', 
+  'InstructorController:update_adi_licence_status');

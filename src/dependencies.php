@@ -2,6 +2,7 @@
 
 use App\Instructor\InstructorController;
 use App\InstructorCoverage\InstructorCoverageController;
+use App\SuperAdmin\SuperAdminController;
 use App\Controllers\UserController;
 use App\Controllers\AuthController;
 use App\Controllers\ImgController;
@@ -60,5 +61,9 @@ $container['AuthController'] = function($c) {
 
 $container['ImgController'] = function($c) {
   return new ImgController($c);
+};
+
+$container['SuperAdminController'] = function($c) {
+  return new SuperAdminController($c);
 };
 
