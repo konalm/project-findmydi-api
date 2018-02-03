@@ -53,7 +53,7 @@ class InstructorService
         return 'status is required';
       }
 
-      if (intval($request->getParam('status')) === 1 && 
+      if (intval($request->getParam('status')) === 0 && 
         !$request->getParam('rejectReason')
       ) {
         return 'reason is required when rejecting adi licence';

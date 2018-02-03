@@ -16,7 +16,7 @@ class InstructorRepo
     $stmt = $this->container->db->prepare(
       "SELECT instructors.id, first_name, surname, email, adi_license_no, 
         gender, verified, hourly_rate, offer, avatar_url, contact_number, 
-        v.status AS adi_licence_verification,
+        v.status AS adi_licence_verification, v.reject_reason AS adi_licence_reject_reason,
         adi_license_verified, array_to_json(array_agg(c.coverage)) AS coverages
       FROM instructors
       LEFT OUTER JOIN 
@@ -32,7 +32,7 @@ class InstructorRepo
       WHERE instructors.id = ?
       GROUP BY instructors.id, first_name, surname, email, adi_license_no, 
         gender, verified, hourly_rate, offer, avatar_url, contact_number, 
-        adi_license_verified, v.status"
+        adi_license_verified, v.status, v.reject_reason"
     );
 
     try {
@@ -221,8 +221,6 @@ class InstructorRepo
    * update instructor adi licence status 
    */
   public function update_adi_licence_status($id, $status, $reject_reason) {
-    error_log('update adi licence status');
-
     $stmt = $this->container->db->prepare(
       "UPDATE instructor_adi_license_verifications 
       SET status = ?, reject_reason = ?
@@ -232,8 +230,6 @@ class InstructorRepo
     try {
       $stmt->execute([$status, $reject_reason, $id]);
     } catch (PDOException $e) {
-      error_log('ERROR');
-      error_log(json_encode($e));
       return 500;
     }
   }

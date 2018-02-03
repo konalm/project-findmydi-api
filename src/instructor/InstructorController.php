@@ -159,6 +159,7 @@ class InstructorController
         $user_id . '.jpg';
       
       $adi_license_photo->moveTo($move_to_dir);
+ 
       
       if ($this->repo->get_adi_licence($user_id)) {
         $this->repo->update_adi_licence($user_id);
@@ -166,6 +167,7 @@ class InstructorController
       } 
 
       $this->repo->create_adi_licence($user_id, "uploads/adiLicenceVerification/{$user_id}.jpg");
+
       return $response->withJson('submitted adi license for review');
     }
 
@@ -198,7 +200,7 @@ class InstructorController
       $id = $args['id'];
       $status = $request->getParam('status');
 
-      $reject_reason = $request->getParam('status') == 1 ?
+      $reject_reason = $request->getParam('status') == 0 ?
         $request->getParam('rejectReason') : null; 
 
       if ($this->repo->update_adi_licence_status($id, $status, $reject_reason) === 500) {
