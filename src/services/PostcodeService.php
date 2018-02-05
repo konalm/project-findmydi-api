@@ -1,5 +1,7 @@
 <?php 
 
+namespace App\Services;
+
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Exception\RequestException;
 

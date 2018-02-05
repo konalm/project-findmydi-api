@@ -5,7 +5,6 @@ namespace App\Instructor;
 use \Interop\Container\ContainerInterface as ContainerInterface;
 use App\Instructor\InstructorService;
 use App\Instructor\InstructorRepo;
-
 use App\Services\TokenService;
 
 
@@ -15,10 +14,21 @@ class InstructorController
   
   public function __construct(ContainerInterface $container) {
     $this->container = $container;
-    $this->service = new InstructorService();
+    $this->service = new InstructorService($container);
     $this->repo = new InstructorRepo($container);
 
     $this->token_service = new TokenService();
+  }
+
+
+  /**
+   * check instructor is verified 
+   */
+  public function check_verified($request, $response, $args) {
+    $instructor_token = $this->token_service->get_decoded_user($request);
+    $verified = $this->service->check_verified($instructor_token);
+
+    return $response->withJson($verified, 200);
   }
 
  
@@ -83,7 +93,7 @@ class InstructorController
       return $response->withJson('Not Authorized', 406);
     }
 
-    $instructor_id = $this->token_service->get_decoded_user($request)->id;
+    $token_instructor = $this->token_service->get_decoded_user($request);
 
     $profile = new \stdClass();
     $profile->hourly_rate = $request->getParam('hourlyRate');
@@ -92,15 +102,15 @@ class InstructorController
 
     $validation = $this->service->validate_instructor_profile($profile);
 
-    if ($validation) {
-      return $response->withJson($validation, 422);
-    }
+    if ($validation) { return $response->withJson($validation, 422); }
 
-    $update_profle = $this->repo->update_profile($instructor_id, $profile);
+    $update_profle = $this->repo->update_profile($token_instructor->id, $profile);
 
     if ($update_profle === 500) {
       return $response->withJson('internal issue updating profile', 200);
     }
+
+    $this->service->check_verified($token_instructor);
 
     return $response->withJson('instructor profile updated');
   }
@@ -122,15 +132,17 @@ class InstructorController
         return $response->withJson('no avatar found', 403);
       }
 
-      $user_id = $this->token_service->get_decoded_user($request)->id;
-      $avatar_name = $user_id . '.jpg';
+      $token_instructor = $this->token_service->get_decoded_user($request);
+      $avatar_name = $token_instructor->id . '.jpg';
 
       $move_to_dir = $this->container->getUploadDir .
         'instructorAvatar/' .
         $avatar_name;
 
       $avatar->moveTo($move_to_dir);
-      $this->repo->update_avatar($user_id, "uploads/instructorAvatar/{$avatar_name}");
+      $this->repo->update_avatar($token_instructor->id, "uploads/instructorAvatar/{$avatar_name}");
+
+      $this->service->check_verified($token_instructor);
 
       return $response->withJson('saved image', 200);
     }
@@ -159,7 +171,6 @@ class InstructorController
         $user_id . '.jpg';
       
       $adi_license_photo->moveTo($move_to_dir);
- 
       
       if ($this->repo->get_adi_licence($user_id)) {
         $this->repo->update_adi_licence($user_id);
@@ -167,7 +178,6 @@ class InstructorController
       } 
 
       $this->repo->create_adi_licence($user_id, "uploads/adiLicenceVerification/{$user_id}.jpg");
-
       return $response->withJson('submitted adi license for review');
     }
 
@@ -193,6 +203,8 @@ class InstructorController
         return $response->withJson('Not Authorized', 406); 
       }
 
+      $token_instructor = $this->token_service->get_decoded_user($request);
+
       if ($validation = $this->service->validate_adi_licence_status_update($request)) {
         return $response->withJson($validation, 403);
       }
@@ -205,6 +217,16 @@ class InstructorController
 
       if ($this->repo->update_adi_licence_status($id, $status, $reject_reason) === 500) {
           return $response->withJson('error updating adi licence status', 500);
+      }
+
+      if (intval($status) === 1) {
+        /* check verified expects a token rep of instructor, don't have this as token 
+          is from super admin performing this action. So a fake one is built */ 
+        $fake_token_instructor = new \stdClass();
+        $fake_token_instructor->verified = false;
+        $fake_token_instructor->id = $this->repo->get_instructor_id_of_adi_licence_verification($id);
+
+        $this->service->check_verified($fake_token_instructor);
       }
 
       return $response->withJson('instructor adi licence status updated', 200);

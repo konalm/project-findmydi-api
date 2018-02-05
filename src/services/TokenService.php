@@ -98,11 +98,7 @@ class TokenService
       return false; 
     }
 
-    error_log('verified token !!');
-
     $user = $this->get_decoded_user($request); 
-
-    error_log(json_encode($user));
 
     if ($user->access_level !== 1000) {
       return false; 

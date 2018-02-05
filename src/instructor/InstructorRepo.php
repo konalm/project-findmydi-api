@@ -37,7 +37,7 @@ class InstructorRepo
 
     try {
       $stmt->execute([$id]);
-    } catch (Exception $e) {
+    } catch (PDOException $e) {
       return false;
     }
 
@@ -232,5 +232,62 @@ class InstructorRepo
     } catch (PDOException $e) {
       return 500;
     }
+  }
+
+  /**
+   * update instructor verified property
+   */
+  public function update_verified($id, $verified) {
+    $stmt = $this->container->db->prepare(
+      "UPDATE instructors SET verified = ? WHERE id = ?"
+    );
+
+    try {
+      $stmt->execute([$verified, $id]);
+    } catch (PDOException $e) {
+      return 500;
+    }
+  }
+
+  /**
+   * get instructor id of adi licence verification 
+   */
+  public function get_instructor_id_of_adi_licence_verification($id) {
+    $stmt = $this->container->db->prepare(
+      "SELECT instructors.id AS instructor_id
+      FROM instructor_adi_license_verifications AS iv
+      INNER JOIN instructors
+        ON instructors.id = iv.user_id
+      WHERE iv.id = ?"
+    );
+
+    try {
+      $stmt->execute([$id]);
+    } catch (PDOException $e) {
+      return 500;
+    }
+
+    return $stmt->fetch()['instructor_id'];
+  }
+
+  /**
+   * get all verified instructors 
+   */
+  public function get_verified_instructors() {
+    $stmt = $this->container->db->prepare(
+      "SELECT first_name, surname, email, ic.postcode, ic.longitude, ic.latitude
+      FROM instructors
+      LEFT JOIN instructor_coverage AS ic
+        ON ic.user_id = instructors.id
+      WHERE instructors.verified = true"
+    );
+
+    try {
+      $stmt->execute();
+    } catch (PDOException $e) {
+      return 500;
+    }
+
+    return $stmt->fetchAll();
   }
 }

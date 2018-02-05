@@ -8,6 +8,7 @@ use App\InstructorCoverage\InstructorCoverageService;
 use App\InstructorCoverage\InstructorCoverageRepo;
 
 use App\Services\TokenService;
+use App\Instructor\InstructorService;
 
 
 class InstructorCoverageController 
@@ -19,6 +20,7 @@ class InstructorCoverageController
     $this->service = new InstructorCoverageService();
     $this->repo = new InstructorCoverageRepo($container);
     $this->token_service = new TokenService();
+    $this->instructor_service = new InstructorService($container);
   }
 
   
@@ -32,10 +34,10 @@ class InstructorCoverageController
       return $response->withJson('Not Authenticated', 401);
     }
 
-    $user = $this->token_service->get_decoded_user($request);
+    $token_instructor = $this->token_service->get_decoded_user($request);
 
     $instructor_coverage = new \stdClass();
-    $instructor_coverage->user_id = $user->id;
+    $instructor_coverage->user_id = $token_instructor->id;
     $instructor_coverage->postcode = $request->getParam('postcode');
     $instructor_coverage->range = $request->getParam('range');
 
@@ -57,6 +59,7 @@ class InstructorCoverageController
     $instructor_coverage->latitude = $postcode_stats->latitude;
   
     $this->repo->save($instructor_coverage);
+    $this->instructor_service->check_verified($token_instructor);
 
     return $response->withJson('instructor coverage saved', 200);
   }

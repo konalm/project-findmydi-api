@@ -69,7 +69,9 @@ class InstructorCoverageRepo
 
     try {
       $stmt->execute([$id]);
-    } catch (Exception $e)
+    } catch (Exception $e) {
+      return false;
+    }
   }
 
   /**
@@ -88,5 +90,24 @@ class InstructorCoverageRepo
 
     return $user_id === $stmt->fetch()['user_id'];
   } 
+
+  public function get_coverages_for_verified_instructors() {
+    $stmt = $this->container->db->prepare(
+      "SELECT first_name, surname, email, ic.postcode, ic.longitude, ic.latitude,
+        ic.range
+      FROM instructor_coverage AS ic
+      INNER JOIN instructors 
+        ON instructors.id = ic.user_id
+      WHERE instructors.verified = true"
+    );
+
+    try {
+      $stmt->execute();
+    } catch (PDOException $e) {
+      return 500;
+    }
+
+    return $stmt->fetchAll();
+  }
 
 }

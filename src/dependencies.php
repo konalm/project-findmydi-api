@@ -6,6 +6,7 @@ use App\SuperAdmin\SuperAdminController;
 use App\Controllers\UserController;
 use App\Controllers\AuthController;
 use App\Controllers\ImgController;
+use App\Search\SearchController;
 
 $container = $app->getContainer();
 
@@ -49,6 +50,10 @@ $container['InstructorController'] = function ($c) {
 
 $container['InstructorCoverageController'] = function ($c) {
   return new InstructorCoverageController($c);
+};
+
+$container['SearchController'] = function ($c) {
+  return new SearchController($c);
 };
 
 $container['UserController'] = function($c) {

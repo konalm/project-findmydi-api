@@ -20,3 +20,7 @@ $app->get('/instructors-in-review', 'InstructorController:get_instructors_in_rev
 
 $app->put('/instructor-adi-licence-status/{id}', 
   'InstructorController:update_adi_licence_status');
+
+$app->get('/search-instructors/{postcode}', 'SearchController:search_instructors');
+
+$app->get('/check', 'InstructorController:check_verified');

@@ -4,7 +4,8 @@
         "monolog/monolog": "^1.23",
         "guzzlehttp/guzzle": "^6.3",
         "lcobucci/jwt": "^3.2",
-        "vlucas/phpdotenv": "^2.4"
+        "vlucas/phpdotenv": "^2.4",
+        "anahkiasen/underscore-php": "^2.0"
     },
     
     "autoload": {
