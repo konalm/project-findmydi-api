@@ -93,7 +93,8 @@ class InstructorCoverageRepo
 
   public function get_coverages_for_verified_instructors() {
     $stmt = $this->container->db->prepare(
-      "SELECT first_name, surname, email, ic.postcode, ic.longitude, ic.latitude,
+      "SELECT instructors.id, first_name, surname, email, contact_number, gender, 
+        hourly_rate, avatar_url, offer, ic.postcode, ic.longitude, ic.latitude, 
         ic.range
       FROM instructor_coverage AS ic
       INNER JOIN instructors 

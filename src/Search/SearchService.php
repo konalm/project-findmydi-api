@@ -48,6 +48,7 @@ class SearchService
             $instructor['range'] >= 
             ($maps_res[$key]->distance->value / 1609.34)
         ) {
+           
             array_push($instructors_in_range, $instructor);
         }
     }

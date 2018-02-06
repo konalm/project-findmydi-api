@@ -32,7 +32,7 @@ class SearchController
       $postcode_data = $this->postcode_service->get_postcode_data($args['postcode']);
 
       if (!$postcode_data) {
-        return $response->withJson('issue using postcode', 500);
+        return $response->withJson('issue using postcode', 422);
       }
 
       $instructors =  
