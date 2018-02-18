@@ -38,3 +38,17 @@ $app->get('/img/adi-license/{user_id}', 'ImgController:get_adi_licence_photo');
 $app->get('/img/avatar/{user_id}', 'ImgController:get_instructor_avatar');
 
 $app->get('/img[/{path:.*}]', 'ImgController:serve_image');
+
+
+/**
+ * Google Apis
+ */
+$app->get('/googleapis-autocomplete/{search_term}', 
+  'GoogleApisController:get_googleapis_autocomplete_regions');
+
+$app->get('/googleapis-geocode/{address}', 
+  'GoogleApisController:get_googleapis_geocode');
+
+
+$app->get('/postcode-lnglat/{postcode}', 'PostcodeController:get_postcode_lnglat');
+

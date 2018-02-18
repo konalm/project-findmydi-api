@@ -5,7 +5,8 @@
         "guzzlehttp/guzzle": "^6.3",
         "lcobucci/jwt": "^3.2",
         "vlucas/phpdotenv": "^2.4",
-        "anahkiasen/underscore-php": "^2.0"
+        "anahkiasen/underscore-php": "^2.0",
+        "guzzle/guzzle": "~3.9"
     },
     
     "autoload": {

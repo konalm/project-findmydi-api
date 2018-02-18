@@ -22,9 +22,6 @@ $app->add(function ($req, $res, $next) {
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });
 
-error_log('container from home --->');
-// error_log($app->getContainer());
-
 // Set up dependencies 
 require __DIR__ . '/../src/dependencies.php';
 

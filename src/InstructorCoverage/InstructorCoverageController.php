@@ -58,10 +58,39 @@ class InstructorCoverageController
     $instructor_coverage->longitude = $postcode_stats->longitude;
     $instructor_coverage->latitude = $postcode_stats->latitude;
   
-    $this->repo->save($instructor_coverage);
+    $this->repo->save_postcode($instructor_coverage);
     $this->instructor_service->check_verified($token_instructor);
 
     return $response->withJson('instructor coverage saved', 200);
+  }
+
+
+  /**
+   * 
+   */
+  public function save_region($request, $response, $args) {
+    error_log('save region');
+
+    if (!$this->token_service->verify_token($request)) {
+      return $response->withJson('Not Authenticated', 401);
+    }
+
+    $token_instructor = $this->token_service->get_decoded_user($request);
+
+    $coverage = new \stdClass();
+    $coverage->user_id = $token_instructor->id;
+    $coverage->region = $request->getParam('region');
+    $coverage->long = $request->getParam('long');
+    $coverage->lat = $request->getParam('lat');
+    $coverage->range = $request->getParam('range');
+
+    if ($validation = $this->service->validate_region_coverage($coverage)) {
+      return $response->withJson($validation, 422);
+    }
+
+    $this->repo->save_region($coverage);
+
+    return $response->withJson('instructor region coverage saved', 200);
   }
 
 

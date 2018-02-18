@@ -9,13 +9,13 @@ class InstructorCoverageRepo
   }
 
   /**
-   * save instructor coverage model
+   * save postcode instructor coverage model
    */
-  public function save($instructor_coverage) {
+  public function save_postcode($instructor_coverage) {
     $stmt = $this->container->db->prepare(
       'INSERT INTO instructor_coverage
-        (user_id, postcode, longitude, latitude, range)
-        VALUES (?,?,?,?,?)'
+        (user_id, postcode, longitude, latitude, range, coverage_type)
+        VALUES (?,?,?,?,?,?)'
     );
 
     try {
@@ -25,12 +25,40 @@ class InstructorCoverageRepo
         $instructor_coverage->longitude,
         $instructor_coverage->latitude,
         $instructor_coverage->range,
+        'postcode'
       ]);
     } catch (Exception $e) {
       return 500;
     }
 
-    return 'instructor coverage saved';
+    return 'instructor postcode coverage saved';
+  }
+
+  
+  /**
+   * save region instructor coverage model 
+   */
+  public function save_region($coverage) {
+    $stmt = $this->container->db->prepare(
+      'INSERT INTO instructor_coverage
+        (user_id, region, longitude, latitude, range, coverage_type)
+        VALUES (?,?,?,?,?,?)'
+    );
+
+    try {
+      $stmt->execute([
+        $coverage->user_id,
+        $coverage->region,
+        $coverage->long,
+        $coverage->lat,
+        $coverage->range,
+        'region'
+      ]);
+    } catch (Exeption $e) {
+      return 500;
+    }
+
+    return 'instructor region coverage saved';
   }
 
 
@@ -59,6 +87,7 @@ class InstructorCoverageRepo
     return true;
   }
 
+
   /**
    * delete instructor coverage model
    */
@@ -73,6 +102,7 @@ class InstructorCoverageRepo
       return false;
     }
   }
+
 
   /**
    * check instructor is authorized access to instructor coverage model
@@ -91,6 +121,10 @@ class InstructorCoverageRepo
     return $user_id === $stmt->fetch()['user_id'];
   } 
 
+
+  /**
+   * 
+   */
   public function get_coverages_for_verified_instructors() {
     $stmt = $this->container->db->prepare(
       "SELECT instructors.id, first_name, surname, email, contact_number, gender, 
@@ -110,5 +144,4 @@ class InstructorCoverageRepo
 
     return $stmt->fetchAll();
   }
-
 }

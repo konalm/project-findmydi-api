@@ -21,6 +21,28 @@ class InstructorCoverageService
   }
 
   /**
+   * validate instructor coverage of region type
+   */
+  public function validate_region_coverage($coverage) {
+    if (!$coverage->region) {
+      return 'region is required';
+    }
+
+    if (!$coverage->long) {
+      return 'longitude is required';
+    }
+
+    if (!$coverage->lat) {
+      return 'latitude is required';
+    }
+
+    if (!$coverage->range) {
+      return 'range is required';
+    }
+  }
+
+
+  /**
    * send postcode to api.postcode.io to check postcode is valid
    * and return the longitude and latitude
    */
@@ -37,6 +59,7 @@ class InstructorCoverageService
     }
 
     $result = json_decode($response->getBody());
+    
     return $result->result;
   }
 }

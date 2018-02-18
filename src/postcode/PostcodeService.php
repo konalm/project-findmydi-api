@@ -1,6 +1,6 @@
 <?php 
 
-namespace App\Services;
+namespace App\Postcode;
 
 use GuzzleHttp\Psr7;
 use GuzzleHttp\Exception\RequestException;

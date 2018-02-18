@@ -21,9 +21,11 @@ class InstructorRepo
       FROM instructors
       LEFT OUTER JOIN 
       (
-        SELECT ic.user_id, json_build_object('id', ic.id, 'postcode', 
-          ic.postcode, 'range', ic.range) 
-          AS coverage
+        SELECT ic.user_id, 
+          json_build_object(
+            'id', ic.id, 'postcode', ic.postcode, 'region', ic.region, 
+            'range', ic.range, 'coverage_type', ic.coverage_type
+          ) AS coverage
         FROM instructor_coverage ic
       ) c
         ON instructors.id = c.user_id
@@ -217,6 +219,7 @@ class InstructorRepo
     return $stmt->fetchAll();
   }
 
+
   /**
    * update instructor adi licence status 
    */
@@ -234,6 +237,7 @@ class InstructorRepo
     }
   }
 
+
   /**
    * update instructor verified property
    */
@@ -248,6 +252,7 @@ class InstructorRepo
       return 500;
     }
   }
+
 
   /**
    * get instructor id of adi licence verification 

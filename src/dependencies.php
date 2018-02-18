@@ -7,6 +7,8 @@ use App\Controllers\UserController;
 use App\Controllers\AuthController;
 use App\Controllers\ImgController;
 use App\Search\SearchController;
+use App\Postcode\PostcodeController;
+use App\GoogleApis\GoogleApisController;
 
 $container = $app->getContainer();
 
@@ -70,5 +72,13 @@ $container['ImgController'] = function($c) {
 
 $container['SuperAdminController'] = function($c) {
   return new SuperAdminController($c);
+};
+
+$container['GoogleApisController'] = function($c) {
+  return new GoogleApisController($c);
+};
+
+$container['PostcodeController'] = function ($c) {
+  return new PostcodeController($c);
 };
 
