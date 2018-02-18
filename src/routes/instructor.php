@@ -12,11 +12,15 @@ $app->post('/update-avatar', 'InstructorController:update_avatar');
 $app->post('/instructor-adi-licence-upload', 
   'InstructorController:upload_adi_licence_for_review');
 
+  
 /**
  * coverages
  */
 $app->post('/instructors-coverage', 'InstructorCoverageController:save');
+
 $app->post('/instructor-region-coverages', 'InstructorCoverageController:save_region');
+$app->put('/instructor-region-coverages/{id}', 'InstructorCoverageController:update_region');
+
 $app->put('/instructors-coverage/{id}', 'InstructorCoverageController:update');
 $app->delete('/instructors-coverage/{id}', 'InstructorCoverageController:delete');
 

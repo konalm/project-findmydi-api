@@ -87,6 +87,29 @@ class InstructorCoverageRepo
     return true;
   }
 
+  /**
+   * update region coverage model 
+   */
+  public function update_region($coverage) {
+    $stmt = $this->container->db->prepare(
+      'UPDATE instructor_coverage 
+        SET region = ?, longitude = ?, latitude = ?, range = ?
+        WHERE id = ?'
+    );
+
+    try {
+      $stmt->execute([
+        $coverage->region,
+        $coverage->long,
+        $coverage->lat,
+        $coverage->range,
+        $coverage->id
+      ]);
+    } catch (Exception $e) {
+      return 500;
+    }
+  }
+
 
   /**
    * delete instructor coverage model

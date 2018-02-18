@@ -66,11 +66,9 @@ class InstructorCoverageController
 
 
   /**
-   * 
+   * save new region coverage model 
    */
   public function save_region($request, $response, $args) {
-    error_log('save region');
-
     if (!$this->token_service->verify_token($request)) {
       return $response->withJson('Not Authenticated', 401);
     }
@@ -95,6 +93,38 @@ class InstructorCoverageController
 
 
   /**
+   * update region coverage model
+   */
+  public function update_region($request, $response, $args) {
+    if (!$this->token_service->verify_token($request)) {
+      return $response->withJson('Not Authenticated', 401);
+    }
+
+    $user_id = $this->token_service->get_decoded_user($request)->id;    
+    
+    $coverage = new \stdClass();
+    $coverage->id = $args['id'];
+    $coverage->region = $request->getParam('region');
+    $coverage->long = $request->getParam('long');
+    $coverage->lat = $request->getParam('lat');
+    $coverage->range = $request->getParam('range');
+
+    if ($validation = $this->service->validate_region_coverage($coverage)) {
+      return $response->withJson($validation, 422);
+    }
+
+    if (!$this->repo->check_instructor_authorized($user_id, $coverage->id)) {
+      return $response
+        ->withJson('Not authorized for this instructor coverage model', 406);
+    }
+
+    $this->repo->update_region($coverage);
+
+    return $response->withJson('region coverage model updated');
+  }
+
+
+  /**
    * validate params sent from client 
    * check instructor is authorized to update instructor coverage model
    * get longitude and latitude from postcode 
@@ -105,7 +135,8 @@ class InstructorCoverageController
       return $response->withJson('Not Authenticated', 401);
     }
 
-    $user_id = $this->token_service->get_decoded_user($request)->id;    
+    $user_id = $this->token_service->get_decoded_user($request)->id;   
+
     $instructor_coverage = new \stdClass();
     $instructor_coverage->id = $args['id'];
     $instructor_coverage->postcode = $request->getParam('postcode');
