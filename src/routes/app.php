@@ -34,11 +34,13 @@ $app->get('/users-verification-credentials',
 $app->get('/jwt', 'AuthController:create_jwt_token');
 $app->post('/jwt-verify', 'AuthController:verify_jwt_token');
 
+
+/**
+ * Images
+ */
 $app->get('/img/adi-license/{user_id}', 'ImgController:get_adi_licence_photo');
 $app->get('/img/avatar/{user_id}', 'ImgController:get_instructor_avatar');
-
 $app->get('/img[/{path:.*}]', 'ImgController:serve_image');
-
 
 /**
  * Google Apis
@@ -46,9 +48,10 @@ $app->get('/img[/{path:.*}]', 'ImgController:serve_image');
 $app->get('/googleapis-autocomplete/{search_term}', 
   'GoogleApisController:get_googleapis_autocomplete_regions');
 
-$app->get('/googleapis-geocode/{address}', 
-  'GoogleApisController:get_googleapis_geocode');
+$app->get('/googleapis-geocode/{address}', 'GoogleApisController:get_googleapis_geocode');
 
-
+/**
+ * postcode 
+ */
 $app->get('/postcode-lnglat/{postcode}', 'PostcodeController:get_postcode_lnglat');
 

@@ -3,6 +3,9 @@
 use Slim\Http\Request;
 use Slim\Http\Response;
 
+require __DIR__ . '/../middleware/instAuth.php';
+
+
 $app->get('/instructor', 'InstructorController:get_instructor');
 $app->post('/instructors', 'InstructorController:save');
 
@@ -16,6 +19,9 @@ $app->post('/instructor-adi-licence-upload',
 /**
  * coverages
  */
+$app->get('/instructor-coverages', 'InstructorCoverageController:get_instructor_coverages')
+  ->add($inst_auth);
+  
 $app->post('/instructors-coverage', 'InstructorCoverageController:save');
 
 $app->post('/instructor-region-coverages', 'InstructorCoverageController:save_region');

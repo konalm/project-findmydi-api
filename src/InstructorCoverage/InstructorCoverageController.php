@@ -3,10 +3,8 @@
 namespace App\InstructorCoverage;
 
 use \Interop\Container\ContainerInterface as ContainerInterface;
-
 use App\InstructorCoverage\InstructorCoverageService;
 use App\InstructorCoverage\InstructorCoverageRepo;
-
 use App\Services\TokenService;
 use App\Instructor\InstructorService;
 
@@ -21,6 +19,22 @@ class InstructorCoverageController
     $this->repo = new InstructorCoverageRepo($container);
     $this->token_service = new TokenService();
     $this->instructor_service = new InstructorService($container);
+  }
+
+
+  /** 
+   * 
+   */
+  public function get_instructor_coverages($request, $response, $args) {
+    $user = $this->token_service->get_decoded_user($request);
+
+    $coverages = $this->repo->get_coverages($user->id);
+
+    if ($coverages === 500) {
+      return $response->withJson('internal server error', 500);
+    }
+
+    return $response->withJson($coverages, 200);
   }
 
   

@@ -67,8 +67,12 @@ class TokenService
    * verify token is validated and verified
    */
   public function verify_token($request) {
+    error_log('verify token');
+
     $signer = new Sha256();
     $token = implode("", $request->getHeader('Authorization'));
+
+    error_log($token);
 
     if (!$token) { return false; }
 

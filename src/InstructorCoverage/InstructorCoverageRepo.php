@@ -2,10 +2,30 @@
 
 namespace App\InstructorCoverage;
 
+
 class InstructorCoverageRepo
 {
   public function __construct (\Slim\Container $container) {
     $this->container = $container;
+  }
+
+  /**
+   * get all coverages for instructor 
+   */
+  public function get_coverages($id) {
+    $stmt = $this->container->db->prepare(
+      'SELECT postcode, region, range, coverage_type 
+      FROM instructor_coverage
+      WHERE user_id = ?'
+    );
+    
+    try {
+      $stmt->execute([$id]);
+    } catch (Exception $e) {
+      return 500;
+    }
+
+    return $stmt->fetchAll();
   }
 
   /**
