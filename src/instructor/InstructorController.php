@@ -96,8 +96,11 @@ class InstructorController
     $token_instructor = $this->token_service->get_decoded_user($request);
 
     $profile = new \stdClass();
-    $profile->hourly_rate = $request->getParam('hourlyRate');
+    $profile->first_name = $request->getParam('firstName');
+    $profile->surname = $request->getParam('surname');
+    $profile->email = $request->getParam('email');
     $profile->contact_number = $request->getParam('contactNumber');
+    $profile->hourly_rate = $request->getParam('hourlyRate');
     $profile->offer = $request->getParam('offer');
 
     $validation = $this->service->validate_instructor_profile($profile);

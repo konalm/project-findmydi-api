@@ -31,6 +31,22 @@ class InstructorService
      * validate instructor input for updating profile
      */
     public function validate_instructor_profile($instructor) {
+      if (!$instructor->first_name) {
+        return 'first name is required';
+      }
+
+      if (!$instructor->surname) {
+        return 'surname is required';
+      }
+
+      if (!$instructor->email) {
+        return 'email is required';
+      }
+
+      if (!$instructor->contact_number) { 
+        return 'contact number is required'; 
+      }
+
       if (!$instructor->hourly_rate) { 
         return 'hourly rate is required'; 
       }
@@ -41,10 +57,6 @@ class InstructorService
 
       if ($instructor->hourly_rate <= 0) {
         return 'hourly rate must be greater than 0';
-      }
-
-      if (!$instructor->contact_number) { 
-        return 'contact number is required'; 
       }
 
       if (!is_numeric($instructor->contact_number)) {

@@ -14,7 +14,7 @@ class InstructorCoverageRepo
    */
   public function get_coverages($id) {
     $stmt = $this->container->db->prepare(
-      'SELECT postcode, region, range, coverage_type 
+      'SELECT id, postcode, region, range, coverage_type, longitude, latitude
       FROM instructor_coverage
       WHERE user_id = ?'
     );

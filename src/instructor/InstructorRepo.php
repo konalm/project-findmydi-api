@@ -99,22 +99,24 @@ class InstructorRepo
   public function update_profile($id, $new_profile) {
     $stmt = $this->container->db->prepare(
       'UPDATE instructors 
-      SET hourly_rate = ?, contact_number = ?, offer = ?
+      SET first_name = ?, surname = ?, email = ?, contact_number = ?, 
+        hourly_rate = ?,  offer = ?
       WHERE id = ?'
     );
 
     try {
       $stmt->execute([
+        $new_profile->first_name,
+        $new_profile->surname,
+        $new_profile->email,
+        $new_profile->contact_number,        
         $new_profile->hourly_rate,
-        $new_profile->contact_number,
         $new_profile->offer,
         $id
       ]);
     } catch (Exception $e) {
       return 500;
     }
-
-    return 'instructor profile updated';
   }
 
 
