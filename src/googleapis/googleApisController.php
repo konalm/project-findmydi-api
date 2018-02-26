@@ -62,6 +62,10 @@ class GoogleApisController
       return $response->withJson('internal server error', 500);
     }
 
+    if (sizeof($geocode_data->results) === 0) {
+      return $response->withJson('address not found', 422);
+    }
+
     $geocode = $geocode_data->results[0];
     $address = explode(',', $geocode->formatted_address);
 
