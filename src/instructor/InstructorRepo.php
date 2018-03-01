@@ -2,15 +2,82 @@
 
 namespace App\Instructor;
 
+
 class InstructorRepo 
 {
   public function __construct (\Slim\Container $container) {
     $this->container = $container; 
   }
 
+  /**
+   * update hourly rate in instructor model
+   */
+  public function update_hourly_rate($id, $hourly_rate, $offer) {
+    $stmt = $this->container->db->prepare(
+      "UPDATE instructors SET hourly_rate = ?, offer = ? WHERE id = ?"
+    );
+
+    try {
+      $stmt->execute([$hourly_rate, $offer, $id]);
+    } catch (PDOException $e) {
+      return 500;
+    }
+  }
 
   /**
-   * get instructor with $id
+   *  update instructor induction's intro read column
+   */
+  public function update_induction_intro_read($inst_id, $read_status) {
+    $stmt = $this->container->db->prepare(
+      "UPDATE instructor_inductions SET intro_read = ? WHERE user_id = ?"
+    );
+
+    try {
+      $stmt->execute([$read_status, $inst_id]);
+    } catch (PDOException $e) {
+      return 500; 
+    }
+  }
+
+  /**
+   * get instructors info for their induction
+   */
+  public function get_induction_info($id) {
+    $stmt = $this->container->db->prepare(
+      "SELECT instructors.id, hourly_rate, avatar_url, ii.intro_read, 
+        v.status AS adi_licence_verification, 
+        array_to_json(array_agg(c.coverage)) AS coverages
+      FROM instructors
+      INNER JOIN instructor_inductions AS ii
+        ON ii.user_id = instructors.id
+        LEFT OUTER JOIN 
+      (
+        SELECT ic.user_id, 
+          json_build_object(
+            'id', ic.id, 'postcode', ic.postcode, 'region', ic.region, 
+            'range', ic.range, 'coverage_type', ic.coverage_type
+          ) AS coverage
+        FROM instructor_coverage ic
+      ) c
+        ON instructors.id = c.user_id
+      LEFT JOIN instructor_adi_license_verifications AS v
+        ON v.user_id = instructors.id 
+      WHERE instructors.id = ?
+      GROUP BY instructors.id, hourly_rate, avatar_url, ii.intro_read, v.status"
+    );
+
+    try {
+      $stmt->execute([$id]);
+    } catch (PDOException $e) {
+      return 500;
+    }
+
+    return $stmt->fetch();
+  }
+
+
+  /**
+   * get instructor 
    */
   public function get($id) {
     $stmt = $this->container->db->prepare(

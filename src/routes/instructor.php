@@ -39,3 +39,18 @@ $app->put('/instructor-adi-licence-status/{id}',
 $app->get('/search-instructors/{postcode}', 'SearchController:search_instructors');
 
 $app->get('/check', 'InstructorController:check_verified');
+
+
+/**
+ * induction 
+ */
+$app->get('/instructor-induction-info', 
+  'InstructorController:get_instructor_induction_info')
+  ->add($inst_auth);
+
+$app->put('/instructor-induction-intro-read', 
+  'InstructorController:update_induction_intro_read')
+  ->add($inst_auth);
+
+$app->put('/instructor-hourly-rate', 'InstructorController:update_instructor_hourly_rate')
+  ->add($inst_auth);

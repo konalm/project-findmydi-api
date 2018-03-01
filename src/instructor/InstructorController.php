@@ -20,6 +20,65 @@ class InstructorController
     $this->token_service = new TokenService();
   }
 
+  /**
+   * update instructor's hourly rate
+   */
+  public function update_instructor_hourly_rate($request, $response, $arg) {
+    error_log('update hourly rate');
+
+    
+    $inst_id = $this->token_service->get_decoded_user($request)->id;
+    $hourly_rate = $request->getParam('hourlyRate');
+    $offer = $request->getParam('offer') ? $request->getParam('offer') : '';
+
+    if ($val = $this->service->validate_hourly_rate($hourly_rate)) {
+      return $response->withJson($val, 422);
+    }
+
+    $update = $this->repo->update_hourly_rate($inst_id, $hourly_rate, $offer);
+
+    if ($update === 500) {
+      return $response->withJson('internal server error', 500);
+    }
+
+    return $response->withJson('updated instructor\'s hourly rate', 200);
+  }
+
+
+  /**
+   * update induction intro read 
+   */
+  public function update_induction_intro_read($request, $response, $args) {
+    $inst_id = $this->token_service->get_decoded_user($request)->id;
+    $read_status = $request->getParam('readStatus');
+
+    if ($val = $this->service->validate_intro_read_update($read_status)) {
+      return $response->withJson($val, 422);
+    }
+
+    $update = $this->repo->update_induction_intro_read($inst_id, $read_status);
+
+    if ($update === 500) {
+      return $response->withJson('internal server error', 500);
+    }
+
+    return $response->withJson('instructor induction intro read updated', 200);
+  }
+
+  /**
+   * get info for instructors induction
+   */
+  public function get_instructor_induction_info($request, $response, $args) {
+    $inst_id = $this->token_service->get_decoded_user($request)->id;
+    $inst_induction_info = $this->repo->get_induction_info($inst_id);
+
+    if ($inst_induction_info === 500) {
+      return $response->withJson('internal server error', 500);
+    }
+
+    return $response->withJson($inst_induction_info, 200);
+  }
+
 
   /**
    * check instructor is verified 
@@ -119,7 +178,7 @@ class InstructorController
   }
 
 
-   /**
+    /**
      * get profile pic out of request, if no reqest then return error
      * assign name to profile pic for user id and move to uploads directory
      */

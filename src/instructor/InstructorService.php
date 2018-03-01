@@ -12,6 +12,36 @@ class InstructorService
       $this->repo = new InstructorRepo($container);
       $this->token_service = new TokenService();
     }
+    
+    /**
+     * 
+     */
+    public function validate_hourly_rate($hourly_rate) {
+      if (!$hourly_rate) {
+        return 'hourly rate is required';
+      }
+
+      if (intval($hourly_rate <= 0)) {
+        return 'hourly rate must be greater than 0';
+      }
+    }
+
+    /**
+     *  validate intro read update
+     */
+    public function validate_intro_read_update($read_status) {
+      if (!$read_status) {
+        return 'read status is required';
+      }
+
+      if (
+        strtolower($read_status) !== 'true' && 
+        strtolower($read_status !== 'false')
+      ) {
+        // return 'read status is incorrect format';
+      }
+    }
+
 
     /**
      * valdate instructor input recieved from request
@@ -26,6 +56,7 @@ class InstructorService
 
       return false;
     }
+
 
     /**
      * validate instructor input for updating profile
@@ -66,6 +97,7 @@ class InstructorService
       return false;
     }
 
+
     /**
      * validate adi licence status update 
      */
@@ -82,6 +114,7 @@ class InstructorService
 
       return false;
     }
+
 
     /**
      * check specific instructor credentials to check if they have become verifed
