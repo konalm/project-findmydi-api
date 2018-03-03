@@ -13,7 +13,8 @@ $app->put('/instructors-profile', 'InstructorController:update_profile');
 $app->post('/update-avatar', 'InstructorController:update_avatar');
 
 $app->post('/instructor-adi-licence-upload', 
-  'InstructorController:upload_adi_licence_for_review');
+  'InstructorController:upload_adi_licence_for_review')
+  ->add($inst_auth);
 
   
 /**
@@ -53,4 +54,8 @@ $app->put('/instructor-induction-intro-read',
   ->add($inst_auth);
 
 $app->put('/instructor-hourly-rate', 'InstructorController:update_instructor_hourly_rate')
+  ->add($inst_auth);
+
+$app->post('/instructor-adi-licence-data', 
+  'InstructorController:upload_adi_licence_data')
   ->add($inst_auth);

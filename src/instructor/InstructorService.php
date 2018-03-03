@@ -9,8 +9,30 @@ use App\Instructor\InstructorRepo;
 class InstructorService
 {
     public function __construct(\Slim\Container $container) {
+      $this->container = $container;
       $this->repo = new InstructorRepo($container);
       $this->token_service = new TokenService();
+    }
+
+    /**
+     * validate adi licence data to be uploaded
+     */
+    public function adi_licence_validation ($licence_data) {
+      if (!$licence_data->no) {
+        return 'adi licence number is required';
+      }
+
+      if (!$licence_data->img) {
+        return 'adi licence image is required';
+      }
+    }
+
+    /**
+     * 
+     */
+    public function build_adi_img_src($id) {
+      return 
+        $this->container->getUploadDir . 'adiLicenceVerification/' . $id . '.jpg';
     }
     
     /**

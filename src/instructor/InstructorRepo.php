@@ -10,6 +10,21 @@ class InstructorRepo
   }
 
   /**
+   * update adi licence no in instructor model
+   */
+  public function update_adi_licence_no($id, $adi_licence_no) {
+    $stmt = $this->container->db->prepare(
+      "UPDATE instructors SET adi_license_no = ? WHERE id = ?"
+    );
+
+    try {
+      $stmt->execute([$adi_licence_no, $id]);
+    } catch (PDOException $e) {
+      return 500;
+    }
+  }
+
+  /**
    * update hourly rate in instructor model
    */
   public function update_hourly_rate($id, $hourly_rate, $offer) {
@@ -23,6 +38,7 @@ class InstructorRepo
       return 500;
     }
   }
+
 
   /**
    *  update instructor induction's intro read column
@@ -39,13 +55,14 @@ class InstructorRepo
     }
   }
 
+
   /**
    * get instructors info for their induction
    */
   public function get_induction_info($id) {
     $stmt = $this->container->db->prepare(
-      "SELECT instructors.id, hourly_rate, avatar_url, ii.intro_read, 
-        v.status AS adi_licence_verification, 
+      "SELECT instructors.id, hourly_rate, avatar_url, ii.intro_read, offer,
+        adi_license_no AS adi_licence_no, v.status AS adi_licence_verification,
         array_to_json(array_agg(c.coverage)) AS coverages
       FROM instructors
       INNER JOIN instructor_inductions AS ii
@@ -58,12 +75,14 @@ class InstructorRepo
             'range', ic.range, 'coverage_type', ic.coverage_type
           ) AS coverage
         FROM instructor_coverage ic
+        LIMIT 1
       ) c
         ON instructors.id = c.user_id
       LEFT JOIN instructor_adi_license_verifications AS v
         ON v.user_id = instructors.id 
       WHERE instructors.id = ?
-      GROUP BY instructors.id, hourly_rate, avatar_url, ii.intro_read, v.status"
+      GROUP BY instructors.id, hourly_rate, avatar_url, ii.intro_read, v.status,
+        adi_license_no, offer"
     );
 
     try {

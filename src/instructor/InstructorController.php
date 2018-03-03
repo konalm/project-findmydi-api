@@ -16,17 +16,14 @@ class InstructorController
     $this->container = $container;
     $this->service = new InstructorService($container);
     $this->repo = new InstructorRepo($container);
-
     $this->token_service = new TokenService();
   }
+
 
   /**
    * update instructor's hourly rate
    */
   public function update_instructor_hourly_rate($request, $response, $arg) {
-    error_log('update hourly rate');
-
-    
     $inst_id = $this->token_service->get_decoded_user($request)->id;
     $hourly_rate = $request->getParam('hourlyRate');
     $offer = $request->getParam('offer') ? $request->getParam('offer') : '';
@@ -178,119 +175,136 @@ class InstructorController
   }
 
 
-    /**
-     * get profile pic out of request, if no reqest then return error
-     * assign name to profile pic for user id and move to uploads directory
-     */
-    public function update_avatar ($request, $response, $args) {
-      if (!$this->token_service->verify_token($request)) {
-        return $response->withJson('Not Authenticated', 401);
-      }
-
-      $uploaded_files = $request->getUploadedFiles();
-      $avatar = $uploaded_files['file'];
-
-      if (!$avatar) {
-        return $response->withJson('no avatar found', 403);
-      }
-
-      $token_instructor = $this->token_service->get_decoded_user($request);
-      $avatar_name = $token_instructor->id . '.jpg';
-
-      $move_to_dir = $this->container->getUploadDir .
-        'instructorAvatar/' .
-        $avatar_name;
-
-      $avatar->moveTo($move_to_dir);
-      $this->repo->update_avatar($token_instructor->id, "uploads/instructorAvatar/{$avatar_name}");
-
-      $this->service->check_verified($token_instructor);
-
-      return $response->withJson('saved image', 200);
+  /**
+   * get profile pic out of request, if no reqest then return error
+   * assign name to profile pic for user id and move to uploads directory
+   */
+  public function update_avatar ($request, $response, $args) {
+    if (!$this->token_service->verify_token($request)) {
+      return $response->withJson('Not Authenticated', 401);
     }
 
-    /**
-     * upload adi license for review  
-     * if adi license upload already exists -> update status to review
-     * if doesn't already exist -> create adi license model 
-     * save adi license image in dir 
-     */
-    public function upload_adi_licence_for_review ($request, $response, $args) {
-      if (!$this->token_service->verify_token($request)) {
-        return $response->withJson('Not Authorized', 406);
-      }
+    $uploaded_files = $request->getUploadedFiles();
+    $avatar = $uploaded_files['file'];
 
-      $user_id = $this->token_service->get_decoded_user($request)->id;
-      $uploaded_files = $request->getUploadedFiles();
-      $adi_license_photo = $uploaded_files['file'];
-
-      if (!$adi_license_photo) {
-        return $response->withJson('no adi license photo found', 403);
-      }
-
-      $move_to_dir = $this->container->getUploadDir . 
-        'adiLicenceVerification/' .
-        $user_id . '.jpg';
-      
-      $adi_license_photo->moveTo($move_to_dir);
-      
-      if ($this->repo->get_adi_licence($user_id)) {
-        $this->repo->update_adi_licence($user_id);
-        return $response->withJson('resubmitted adi licence for review');
-      } 
-
-      $this->repo->create_adi_licence($user_id, "uploads/adiLicenceVerification/{$user_id}.jpg");
-      return $response->withJson('submitted adi license for review');
+    if (!$avatar) {
+      return $response->withJson('no avatar found', 403);
     }
 
-    /**
-     * get instructors with adi photo licence in review 
-     */
-    public function get_instructors_in_review ($request, $response, $args) {
-      if (!$this->token_service->verify_super_admin_token($request)) {
-        return $response->withJson('Not Authorized', 406);
-      }
+    $token_instructor = $this->token_service->get_decoded_user($request);
+    $avatar_name = $token_instructor->id . '.jpg';
 
-      $instructors_in_review = $this->repo->get_instructors_in_review();
+    $move_to_dir = $this->container->getUploadDir .
+      'instructorAvatar/' .
+      $avatar_name;
 
-      return $response->withJson($instructors_in_review, 200);
+    $avatar->moveTo($move_to_dir);
+    $this->repo->update_avatar($token_instructor->id, "uploads/instructorAvatar/{$avatar_name}");
+
+    $this->service->check_verified($token_instructor);
+
+    return $response->withJson('saved image', 200);
+  }
+
+
+  /**
+   * upload adi license for review  
+   * if adi license upload already exists -> update status to review
+   * if doesn't already exist -> create adi license model 
+   * save adi license image in dir 
+   */
+  public function upload_adi_licence_for_review ($request, $response, $args) {
+    $user_id = $this->token_service->get_decoded_user($request)->id;
+    $uploaded_files = $request->getUploadedFiles();
+    $adi_license_photo = $uploaded_files['file'];
+
+    if (!$adi_license_photo) {
+      return $response->withJson('no adi license photo found', 403);
+    }
+    
+    $adi_license_photo->moveTo($this->service->build_adi_img_src($user_id));
+    
+    if ($this->repo->get_adi_licence($user_id)) {
+      $this->repo->update_adi_licence($user_id);
+      return $response->withJson('resubmitted adi licence for review');
+    } 
+
+    $this->repo->create_adi_licence($user_id, "uploads/adiLicenceVerification/{$user_id}.jpg");
+    return $response->withJson('submitted adi license for review');
+  }
+
+
+  /**
+   * upload adi licence no and image of licence for review
+   */
+  public function upload_adi_licence_data ($request, $response, $args) {
+    $uploaded_files = $request->getUploadedFiles();
+    
+    $user_id = $this->token_service->get_decoded_user($request)->id;
+    $licence_data = new \stdClass();
+    $licence_data->img = $uploaded_files['file'];
+    $licence_data->no = $request->getParam('adiLicenceNo');
+
+    if ($val = $this->service->adi_licence_validation($licence_data)) {
+      return $response->withJson($val, 422);
     }
 
-    /**
-     * verify user is super admin
-     * update status of instructors adi licence
-     */
-    public function update_adi_licence_status($request, $response, $args) {
-      if (!$this->token_service->verify_super_admin_token($request)) {
-        return $response->withJson('Not Authorized', 406); 
-      }
+    $licence_data->img->moveto($this->service->build_adi_img_src($user_id));
 
-      $token_instructor = $this->token_service->get_decoded_user($request);
+    $this->repo->create_adi_licence($user_id, "uploads/adiLicenceVerification/{$user_id}.jpg");
+    $this->repo->update_adi_licence_no($user_id, $licence_data->no);
 
-      if ($validation = $this->service->validate_adi_licence_status_update($request)) {
-        return $response->withJson($validation, 403);
-      }
+    return $response->withJson('adi licence data sumbitted for review');
+  }
 
-      $id = $args['id'];
-      $status = $request->getParam('status');
-
-      $reject_reason = $request->getParam('status') == 0 ?
-        $request->getParam('rejectReason') : null; 
-
-      if ($this->repo->update_adi_licence_status($id, $status, $reject_reason) === 500) {
-          return $response->withJson('error updating adi licence status', 500);
-      }
-
-      if (intval($status) === 1) {
-        /* check verified expects a token rep of instructor, don't have this as token 
-          is from super admin performing this action. So a fake one is built */ 
-        $fake_token_instructor = new \stdClass();
-        $fake_token_instructor->verified = false;
-        $fake_token_instructor->id = $this->repo->get_instructor_id_of_adi_licence_verification($id);
-
-        $this->service->check_verified($fake_token_instructor);
-      }
-
-      return $response->withJson('instructor adi licence status updated', 200);
+  /**
+   * get instructors with adi photo licence in review 
+   */
+  public function get_instructors_in_review ($request, $response, $args) {
+    if (!$this->token_service->verify_super_admin_token($request)) {
+      return $response->withJson('Not Authorized', 406);
     }
+
+    $instructors_in_review = $this->repo->get_instructors_in_review();
+
+    return $response->withJson($instructors_in_review, 200);
+  }
+
+  /**
+   * verify user is super admin
+   * update status of instructors adi licence
+   */
+  public function update_adi_licence_status($request, $response, $args) {
+    if (!$this->token_service->verify_super_admin_token($request)) {
+      return $response->withJson('Not Authorized', 406); 
+    }
+
+    $token_instructor = $this->token_service->get_decoded_user($request);
+
+    if ($validation = $this->service->validate_adi_licence_status_update($request)) {
+      return $response->withJson($validation, 403);
+    }
+
+    $id = $args['id'];
+    $status = $request->getParam('status');
+
+    $reject_reason = $request->getParam('status') == 0 ?
+      $request->getParam('rejectReason') : null; 
+
+    if ($this->repo->update_adi_licence_status($id, $status, $reject_reason) === 500) {
+      return $response->withJson('error updating adi licence status', 500);
+    }
+
+    if (intval($status) === 1) {
+      /* check verified expects a token rep of instructor, don't have this as token 
+        is from super admin performing this action. So a fake one is built */ 
+      $fake_token_instructor = new \stdClass();
+      $fake_token_instructor->verified = false;
+      $fake_token_instructor->id = $this->repo->get_instructor_id_of_adi_licence_verification($id);
+
+      $this->service->check_verified($fake_token_instructor);
+    }
+
+    return $response->withJson('instructor adi licence status updated', 200);
+  }
 } 
