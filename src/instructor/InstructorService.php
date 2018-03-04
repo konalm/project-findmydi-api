@@ -46,6 +46,10 @@ class InstructorService
         return;
       }
 
+      if (!$instructor['adi_licence_verification']) {
+        return; 
+      }
+
       error_log('criteria met for induction passed !!');
       return true;
     }

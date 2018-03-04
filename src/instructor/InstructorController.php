@@ -62,6 +62,7 @@ class InstructorController
     return $response->withJson('instructor induction intro read updated', 200);
   }
 
+
   /**
    * get info for instructors induction
    */
