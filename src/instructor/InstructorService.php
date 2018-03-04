@@ -15,6 +15,42 @@ class InstructorService
     }
 
     /**
+     * check if instructor has all necassery data to of completed induction 
+     */
+    public function check_instructor_inducted($instructor) {
+      error_log('check instructor inducted');
+
+      if (!$instructor['intro_read']) { 
+        error_log('intro not read');
+        return; 
+      }
+
+      if (!$instructor['hourly_rate']) {
+        error_log('no hourly rate');
+        return; 
+      }
+
+      $coverages = json_encode($instructor['coverages']);
+      if (sizeof($coverages) === 0) {
+        error_log('no coverages');
+        return;
+      }
+
+      if (!$instructor['avatar_url']) {
+        error_log('no avatar');
+        return;
+      }
+
+      if (!$instructor['adi_licence_no']) {
+        error_log('no adi licence no');
+        return;
+      }
+
+      error_log('criteria met for induction passed !!');
+      return true;
+    }
+
+    /**
      * validate adi licence data to be uploaded
      */
     public function adi_licence_validation ($licence_data) {

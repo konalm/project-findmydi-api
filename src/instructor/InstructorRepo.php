@@ -10,6 +10,21 @@ class InstructorRepo
   }
 
   /**
+   * update instructor model's inducted to true 
+   */
+  public function update_instructor_inducted($id, $status) {
+    $stmt = $this->container->db->prepare(
+      "UPDATE instructors SET inducted = ? WHERE id = ?"
+    );
+  
+    try {
+      $stmt->execute([$status, $id]);
+    } catch (PDOException $e) {
+      return 500;
+    }
+  }
+  
+  /**
    * update adi licence no in instructor model
    */
   public function update_adi_licence_no($id, $adi_licence_no) {
@@ -63,7 +78,7 @@ class InstructorRepo
     $stmt = $this->container->db->prepare(
       "SELECT instructors.id, hourly_rate, avatar_url, ii.intro_read, offer,
         adi_license_no AS adi_licence_no, v.status AS adi_licence_verification,
-        array_to_json(array_agg(c.coverage)) AS coverages
+        inducted, array_to_json(array_agg(c.coverage)) AS coverages
       FROM instructors
       INNER JOIN instructor_inductions AS ii
         ON ii.user_id = instructors.id
@@ -74,20 +89,21 @@ class InstructorRepo
             'id', ic.id, 'postcode', ic.postcode, 'region', ic.region, 
             'range', ic.range, 'coverage_type', ic.coverage_type
           ) AS coverage
+
         FROM instructor_coverage ic
-        LIMIT 1
       ) c
         ON instructors.id = c.user_id
       LEFT JOIN instructor_adi_license_verifications AS v
         ON v.user_id = instructors.id 
       WHERE instructors.id = ?
       GROUP BY instructors.id, hourly_rate, avatar_url, ii.intro_read, v.status,
-        adi_license_no, offer"
+        adi_license_no, offer, inducted"
     );
 
     try {
       $stmt->execute([$id]);
     } catch (PDOException $e) {
+      error_log('CATCH');
       return 500;
     }
 
@@ -101,7 +117,7 @@ class InstructorRepo
   public function get($id) {
     $stmt = $this->container->db->prepare(
       "SELECT instructors.id, first_name, surname, email, adi_license_no, 
-        gender, verified, hourly_rate, offer, avatar_url, contact_number, 
+        gender, verified, hourly_rate, offer, avatar_url, contact_number, inducted,
         v.status AS adi_licence_verification, v.reject_reason AS adi_licence_reject_reason,
         adi_license_verified, array_to_json(array_agg(c.coverage)) AS coverages
       FROM instructors
@@ -120,7 +136,7 @@ class InstructorRepo
       WHERE instructors.id = ?
       GROUP BY instructors.id, first_name, surname, email, adi_license_no, 
         gender, verified, hourly_rate, offer, avatar_url, contact_number, 
-        adi_license_verified, v.status, v.reject_reason"
+        inducted, adi_license_verified, v.status, v.reject_reason"
     );
 
     try {
@@ -132,6 +148,25 @@ class InstructorRepo
     return $stmt->fetch();
   }
 
+  /**
+   * 
+   */
+  public function save_induction($instructor_id) {
+    $stmt = $this->container->db->prepare(
+      'INSERT INTO instructor_inductions
+        (user_id, intro_read)
+      VALUES (?,?)'
+    );
+
+    try {
+      $stmt->execute([
+        $instructor_id, 0
+      ]);
+    } catch (Exception $e) {
+      return 500;
+    }
+  }
+
 
   /**
    * save instructor model 
@@ -140,7 +175,8 @@ class InstructorRepo
     $stmt = $this->container->db->prepare(
       'INSERT INTO instructors
         (first_name, surname, email, adi_license_no, gender, verified, password)
-      VALUES (?,?,?,?,?,?,?)'
+      VALUES (?,?,?,?,?,?,?)
+      RETURNING id'
     );
 
     try {
@@ -157,7 +193,7 @@ class InstructorRepo
       return 500;
     }
 
-    return 'instructor saved';
+    return $stmt->fetch();
   }
 
 

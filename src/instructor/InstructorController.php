@@ -73,6 +73,15 @@ class InstructorController
       return $response->withJson('internal server error', 500);
     }
 
+    /* set instructor to inducted if eligible */ 
+    if (
+      !$inst_induction_info['inducted'] &&
+      $this->service->check_instructor_inducted($inst_induction_info)
+    ) {
+      $this->repo->update_instructor_inducted($inst_id, true);
+      $inst_induction_info['inducted'] = true; 
+    }
+
     return $response->withJson($inst_induction_info, 200);
   }
 
@@ -118,21 +127,22 @@ class InstructorController
     $instructor->gender = $request->getParam('gender');
     $instructor->password = $request->getParam('password');
 
-    $instructor_validation = 
-      $this->service->validate_instructor_details($instructor);
-
-    if ($instructor_validation) {
-      return $response->withJson($instructor_validation, 422);
+    if ($val = $this->service->validate_instructor_details($instructor)) {
+      return $response->withJson($val, 422);
     }
 
     if ($this->repo->check_email_exists($instructor->email)) {
       return $response->withJson('A user with that email already exists', 403);
     }
 
-    $save_instructor = $this->repo->save($instructor);
-
-    if ($save_instructor === 500) {
+    $new_instructor = $this->repo->save($instructor);
+    if ($new_instructor === 500) {
       return $response->withJson('issue saving instructor', 500);
+    }
+
+    $save_induction = $this->repo->save_induction($new_instructor['id']);
+    if ($save_induction === 500) {
+      return $response->withJson('issue saving induction', 500);
     }
 
     return $response->withJson('new instructor saved', 200);
