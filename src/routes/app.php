@@ -6,10 +6,10 @@ use Slim\Http\Response;
 use App\Services\TokenService;
 
 
-$controller_path = __DIR__ . '/../../src/controllers/';
-
+require __DIR__ . '/../middleware/instAuth.php';
 require __DIR__ . '/instructor.php';
 require __DIR__ . '/superAdmin.php';
+require __DIR__ . '/../../src/review/ReviewRoutes.php';
 
 
 $app->get('/user', 'UserController:get_user');
@@ -55,3 +55,8 @@ $app->get('/googleapis-geocode/{address}', 'GoogleApisController:get_googleapis_
  */
 $app->get('/postcode-lnglat/{postcode}', 'PostcodeController:get_postcode_lnglat');
 
+
+/**
+ * beta 
+ */
+$app->post('/beta-signup', 'BetaSignupController:signup');

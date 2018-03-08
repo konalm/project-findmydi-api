@@ -9,6 +9,8 @@ use App\Controllers\ImgController;
 use App\Search\SearchController;
 use App\Postcode\PostcodeController;
 use App\GoogleApis\GoogleApisController;
+use App\BetaSignup\BetaSignupController;
+use App\Review\ReviewController;
 
 $container = $app->getContainer();
 
@@ -80,5 +82,13 @@ $container['GoogleApisController'] = function($c) {
 
 $container['PostcodeController'] = function ($c) {
   return new PostcodeController($c);
+};
+
+$container['BetaSignupController'] = function ($c) {
+  return new BetaSignupController($c);
+};
+
+$container['ReviewController'] = function ($c) {
+  return new ReviewController($c); 
 };
 
