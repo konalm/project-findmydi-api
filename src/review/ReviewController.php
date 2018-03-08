@@ -52,17 +52,8 @@ class ReviewController
     $subject =  'Driving Instructor Review Invitation';
     $body = $this->service->build_email_body($user->name);
 
-    try {
-      $this->mail_service->send_email($subject, $body, $invite->email, $invite->name);
-    } catch (Exception $e) {
-      return $response->withJson('issue sending email', 500);
-    }
-
-    try {
-      $this->repo->save_review_invite_token($user->id, $invite);
-    } catch (Exception $e) {
-      return $response->withStatus(500);
-    }
+    $this->mail_service->send_email($subject, $body, $invite->email, $invite->name);
+    $this->repo->save_review_invite_token($user->id, $invite);
 
     return $response->withJson('review invite has been saved and sent via email');
   }

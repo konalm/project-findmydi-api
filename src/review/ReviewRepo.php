@@ -17,7 +17,7 @@ class ReviewRepo
    */
   public function get_instructor_reviews($id) {
     $stmt = $this->container->db->prepare(
-      "SELECT reviewer_name, reviewer_email, review_message, rating
+      "SELECT reviewer_name, reviewer_email, review_message, rating, timestamp
       FROM reviews
       WHERE instructor_id = ?"
     );
@@ -26,8 +26,9 @@ class ReviewRepo
     return $stmt->fetchAll();
   }
 
+
   /**
-   * store new review invite tokenx
+   * store new review invite tokens
    */
   public function save_review_invite_token($instructor_id, $invite) {
     $stmt = $this->container->db->prepare(
@@ -38,6 +39,7 @@ class ReviewRepo
     $token = $this->service->generate_random_token(22);
     $stmt->execute([$instructor_id, $invite->name, $invite->email, $token]);
   }
+
 
   /**
    * get instructor's review requests 
