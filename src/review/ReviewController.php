@@ -19,6 +19,92 @@ class ReviewController
   }
 
   /**
+   * get review using token
+   */
+  public function get_review_by_token($request, $response, $args) {
+    $token = $args['token'];
+
+    if (!$token) {
+      return $response->withJson('token is required', 403);
+    }
+
+    $review = $this->repo->get_review_by_token($token);
+
+    return $response->withJson($review);
+  }
+
+  /**
+   * store request request in DB
+   */
+  public function save_review_request($request, $response, $args) {
+    $review_request = new \stdClass();
+    $review_request->name = $request->getParam('name');
+    $review_request->email = $request->getParam('email');
+    $review_request->postcode = $request->getParam('postcode');
+    $review_request->instructor_name = $request->getParam('instructorName');
+    $review_request->review_message = $request->getParam('reviewMessage');
+    $review_request->rating = $request->getParam('rating');
+
+    if ($val = $this->service->validate_review_request($review_request)) {
+      return $response->withJson($val, 422);
+    }
+    
+    $saved_review_request_model = $this->repo->save_review_request($review_request);
+
+    return $response->withJson([
+      'message' => 'new review request saved',
+      'data' => $saved_review_request_model
+    ]);
+  }
+
+
+  /**
+   * validate client entered necassery data 
+   * get required data from the review token 
+   * save review
+   * destroy review token invite (so it can't be reused)
+   */
+  public function save_review($request, $response, $args) {
+    $review = new \stdClass();
+    $review->token = $request->getParam('token');
+    $review->review_message = $request->getParam('reviewMessage');
+    $review->rating = $request->getParam('rating');
+
+    if ($val = $this->service->validate_review($review)) {
+      return $response->withJson($val, 422);
+    }
+
+    $review_token_data = $this->repo->get_review_by_token($review->token);
+    $review->instructor_id = $review_token_data['instructor_id'];
+    $review->reviewer_name = $review_token_data['name'];
+    $review->reviewer_email = $review_token_data['email'];
+    
+    if (!$review_token_data) {
+      return $response->withJson('review token does not exist', 403);
+    }
+
+    $saved_review_model = $this->repo->save_review($review);
+    $this->repo->destroy_invite_token($review->token);
+
+    return $response->withJson([
+      'message' => 'new review saved',
+      'data' => $saved_review_model
+    ]);
+  }
+
+
+  /**
+   * verify review token exists and is legit
+   */
+  public function verify_review_token($request, $response, $args) {
+    $token = $args['token'];
+    $verify = $this->repo->verify_token_exists($token);
+
+    return $response->withJson($verify);
+  }
+
+
+  /**
    * get all of instructors reviews
    */
   public function get_instructor_reviews($request, $response, $args) {
@@ -30,7 +116,7 @@ class ReviewController
       return $response->withJson('internal server error', 500);
     }
 
-    return $response->withjson($reviews);
+    return $response->withJson($reviews);
   }
 
 

@@ -6,9 +6,33 @@ use Twig_Loader_FileSystem;
 use Twig_Environment;
 
 
-
 class ReviewService
 {
+  /**
+   * 
+   */
+  public function validate_review_request($review_request) {
+    if (!$review_request->name) {
+      return 'name is required';
+    }
+
+    if (!$review_request->email) {
+      return 'email is required';
+    }
+
+    if (!$review_request->postcode) {
+      return 'postcode is required';
+    }
+
+    if (!$review_request->instructor_name) {
+      return 'instructor name is required';
+    }
+
+    if (!$review_request->rating) {
+      return 'rating is required';
+    }
+  }
+
   /**
    * validate data for review invitation
    */
@@ -21,6 +45,21 @@ class ReviewService
       return 'name is required';
     }
   }
+
+
+  /**
+   * validate review
+   */
+  public function validate_review($review) {
+    if (!$review->token) {
+      return 'token is required';
+    }
+
+    if (!$review->rating) {
+      return 'rating is required';
+    }
+  }
+
 
   /**
    * 
