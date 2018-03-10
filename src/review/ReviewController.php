@@ -19,6 +19,51 @@ class ReviewController
   }
 
   /**
+   * resend email review invitation to recipient
+   */
+  public function resend_review_invite($request, $response, $args) {
+    $invite_id = $args['invite_id'];
+    $instructor_id = $this->token_service->get_decoded_user($request)->id;
+    
+    $review_invite = $this->repo->get_review_invite($invite_id, $instructor_id);
+
+    if (!$review_invite) {
+      return $response->withJson('revew invite does not exist', 403);
+    }
+
+    $subject = 'Driving Instructor Review Invitation';
+    $body = $this->service->build_email_body($review_invite['name']);
+
+    error_log('review invite -->');
+    error_log(json_encode($review_invite));
+
+    $this->mail_service
+      ->send_email($subject, $body, $review_invite['email'], $review_invite['name']);
+    
+    $this->mail_service
+      ->send_email($subject, $body, 'connor@codegood.co', $review_invite['name']);
+
+    return $response->withJson('review invitation has been re-sent');
+  }
+
+
+  /**
+   * cancel review invitation by deleting the review invite model 
+   */
+  public function cancel_review_invite($request, $response, $args) {
+    $invite_id = $args['invite_id'];
+    $instructor_id = $this->token_service->get_decoded_user($request)->id;
+
+    if (!$this->repo->get_review_invite($invite_id, $instructor_id)) {
+      return $response->withJson('review invite does not exist', 422);
+    }
+
+    $this->repo->destroy_review_invite_token($instructor_id, $invite_id);
+    return $response->withJson('review invitation has been cancelled');
+  }
+
+
+  /**
    * get review using token
    */
   public function get_review_by_token($request, $response, $args) {
@@ -29,9 +74,9 @@ class ReviewController
     }
 
     $review = $this->repo->get_review_by_token($token);
-
     return $response->withJson($review);
   }
+
 
   /**
    * store request request in DB

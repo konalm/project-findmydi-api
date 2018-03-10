@@ -13,6 +13,29 @@ class ReviewRepo
   }
 
   /**
+   * get review request
+   */
+  public function get_review_invite($invite_id, $instructor_id) {
+    $stmt = $this->container->db->prepare(
+      "SELECT id, name, email, token FROM review_invite_tokens WHERE id = ? AND instructor_id = ?"
+    );
+
+    $stmt->execute([$invite_id, $instructor_id]);
+    return $stmt->fetch();
+  }
+
+  /**
+   * destroy review invite token model 
+   */
+  public function destroy_review_invite_token($instructor_id, $invite_id) {
+    $stmt = $this->container->db->prepare(
+      'DELETE FROM review_invite_tokens WHERE id = ? AND instructor_id = ?'
+    );
+
+    $stmt->execute([$invite_id, $instructor_id]);
+  }
+
+  /**
    * save review request model
    */
   public function save_review_request($review_request) {
