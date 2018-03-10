@@ -18,6 +18,7 @@ class ReviewController
     $this->mail_service = new MailService();
   }
 
+
   /**
    * resend email review invitation to recipient
    */
@@ -32,16 +33,15 @@ class ReviewController
     }
 
     $subject = 'Driving Instructor Review Invitation';
-    $body = $this->service->build_email_body($review_invite['name']);
-
-    error_log('review invite -->');
-    error_log(json_encode($review_invite));
+  
+    $body = $this->service
+      ->build_email_body($review_invite['name'], $review_invite['token']);
 
     $this->mail_service
       ->send_email($subject, $body, $review_invite['email'], $review_invite['name']);
     
-    $this->mail_service
-      ->send_email($subject, $body, 'connor@codegood.co', $review_invite['name']);
+    // $this->mail_service
+    //   ->send_email($subject, $body, 'connor@codegood.co', $review_invite['name']);
 
     return $response->withJson('review invitation has been re-sent');
   }
@@ -180,11 +180,12 @@ class ReviewController
       return $response->withJson($val, 422);
     }
 
-    $subject =  'Driving Instructor Review Invitation';
-    $body = $this->service->build_email_body($user->name);
+    $saved_model = $this->repo->save_review_invite_token($user->id, $invite);
+
+    $subject = 'Driving Instructor Review Invitation';
+    $body = $this->service->build_email_body($user->name, $saved_model['token']);
 
     $this->mail_service->send_email($subject, $body, $invite->email, $invite->name);
-    $this->repo->save_review_invite_token($user->id, $invite);
 
     return $response->withJson('review invite has been saved and sent via email');
   }

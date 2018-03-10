@@ -145,11 +145,13 @@ class ReviewRepo
   public function save_review_invite_token($instructor_id, $invite) {
     $stmt = $this->container->db->prepare(
       "INSERT INTO review_invite_tokens (instructor_id, name, email, token)
-        VALUES (?,?,?,?)"
+        VALUES (?,?,?,?)
+        RETURNING *"
     );
 
     $token = $this->service->generate_random_token(22);
     $stmt->execute([$instructor_id, $invite->name, $invite->email, $token]);
+    return $stmt->fetch();
   }
 
 

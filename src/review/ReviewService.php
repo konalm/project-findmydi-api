@@ -9,7 +9,7 @@ use Twig_Environment;
 class ReviewService
 {
   /**
-   * 
+   * validate data for review request from client 
    */
   public function validate_review_request($review_request) {
     if (!$review_request->name) {
@@ -32,6 +32,7 @@ class ReviewService
       return 'rating is required';
     }
   }
+
 
   /**
    * validate data for review invitation
@@ -60,19 +61,25 @@ class ReviewService
     }
   }
 
-
   /**
-   * 
+   * build email with html for review invite
    */
-  public function build_email_body($instructor_name) {
+  public function build_email_body($instructor_name, $token) {
     $loader = new Twig_Loader_Filesystem(__DIR__ .'/resources/mail-templates');
-
     $twig = new Twig_Environment($loader, array());
 
-    $instructor_name = 'John Doe';
-    return $twig->render('reviewInvite.html', array('from' => $instructor_name));
+    error_log('review link -->');
+    error_log(getenv('CLIENT_URL') . 'write-review/' . $token);
+
+    return $twig->render('reviewInvite.html', 
+      array(
+        'from' => $instructor_name,
+        'review_link' => getenv('CLIENT_URL') . 'write-review/' . $token
+      )
+    );
   }
 
+  
   /**
    * generate random string (usually for email invite token)
    */
@@ -80,6 +87,7 @@ class ReviewService
     $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
     $charactersLength = strlen($characters);
     $randomString = '';
+
     for ($i = 0; $i < $length; $i++) {
         $randomString .= $characters[rand(0, $charactersLength - 1)];
     }

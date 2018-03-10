@@ -1,7 +1,24 @@
 <!DOCTYPE html>
 <html>
-<body>
-  You have been invited to write a review from {{ from }}. Please follow the link to 
-  <a href="#">proceed to review.</a>
+<body style="font-family: 'Avenir', Helvetica, Arial, sans-serif; color: #2c3e50;">
+  <h3 style="font-size: 30px; font-weight: 300;">Find My Driving Instructor</h3>
+
+  <p style="font-size: 18px; font-weight: 300;"> 
+    You have been invited to write a review from {{ from }}. 
+    Please click the button below to proceed to review. 
+  </p>
+  
+  <a href="{{ review_link }}">
+    <button style="background: #2EA663; 
+      padding: 12px 20px 12px 20px;
+      color: white;
+      font-size: 18px;
+      font-weight: 100;
+      cursor: pointer;
+      border: none;"
+    >
+      Proceed to Review
+    </button>
+  </a>
 </body>
 </html>
