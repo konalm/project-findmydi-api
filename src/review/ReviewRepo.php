@@ -13,6 +13,35 @@ class ReviewRepo
   }
 
   /**
+   * sent invite to used (so it can't be reused for another review)
+   */
+  public function invite_token_used ($token) {
+    $stmt = $this->container->db->prepare(
+      "UPDATE review_invite_tokens SET used = true WHERE token = ?"
+    );
+
+    $stmt->execute([$token]);
+  }
+
+  /**
+   * check if instructor has review or review request with a given email already
+   */
+  public function check_email_prev_used($email, $instructor_id) {
+    $stmt = $this->container->db->prepare(
+      "SELECT invite.id AS invite_id, r.id as review_id
+      FROM review_invite_tokens AS invite
+      LEFT JOIN reviews AS r
+        ON r.instructor_id = invite.instructor_id
+        AND r.reviewer_email = invite.email
+      WHERE invite.email = ?
+        AND invite.instructor_id = ?"
+    );
+
+    $stmt->execute([$email, $instructor_id]);
+    return $stmt->fetch();
+  }
+
+  /**
    * get review request
    */
   public function get_review_invite($invite_id, $instructor_id) {
@@ -69,6 +98,7 @@ class ReviewRepo
     $stmt->execute([$token]);
   }
 
+
   /**
    * save review model
    */
@@ -94,19 +124,40 @@ class ReviewRepo
 
   /**
    * get review identified by token
+   * return false if token has already been used
    */
   public function get_review_by_token($token) {
     $stmt = $this->container->db->prepare(
-      "SELECT r.instructor_id, r.name, r.email, CONCAT(i.first_name, ' ', i.surname) AS instructor_name
-      FROM review_invite_tokens AS r
-      INNER JOIN instructors AS i
-        ON i.id = r.instructor_id
+      "SELECT invite.instructor_id, invite.name, invite.email, invite.used,
+        CONCAT(inst.first_name, ' ', inst.surname) AS instructor_name
+      FROM review_invite_tokens AS invite
+      INNER JOIN instructors AS inst
+        ON inst.id = invite.instructor_id
       WHERE token = ?"
     );
 
     $stmt->execute([$token]);
+    $fetch = $stmt->fetch();
 
-    return $stmt->fetch();
+    /* return false if email for token already used for review */ 
+    if ($fetch['used']) { 
+      return [
+        'data' => false,
+        'message' => 'This invite has already been used.',
+        'status' => 403
+      ];
+    }
+
+    /* no review invite found for token */ 
+    if (!$fetch) {
+      return [
+        'data' => false, 
+        'message' => 'invite token does not exist.', 
+        'status' => 404
+      ];
+    }
+
+    return ['data' => $fetch, 'message' => 'token does exist'];
   }
 
 
@@ -160,7 +211,10 @@ class ReviewRepo
    */
   public function get_review_requests($id) {
     $stmt = $this->container->db->prepare(
-      "SELECT id, name, email FROM review_invite_tokens WHERE instructor_id = ?"
+      "SELECT id, name, email 
+      FROM review_invite_tokens 
+      WHERE instructor_id = ?
+        AND used = false"
     );
 
     $stmt->execute([$id]);

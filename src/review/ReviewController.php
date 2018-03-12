@@ -74,6 +74,11 @@ class ReviewController
     }
 
     $review = $this->repo->get_review_by_token($token);
+
+    if (!$review['data']) {
+      return $response->withJson($review['message'], $review['status']);
+    }
+
     return $response->withJson($review);
   }
 
@@ -119,17 +124,19 @@ class ReviewController
       return $response->withJson($val, 422);
     }
 
-    $review_token_data = $this->repo->get_review_by_token($review->token);
+    $review_token = $this->repo->get_review_by_token($review->token);
+    $review_token_data = $review_token['data'];
+    
+    if (!$review_token_data) {
+      return $response->withJson($review_token['message'], $review_token['status']);
+    }
+
     $review->instructor_id = $review_token_data['instructor_id'];
     $review->reviewer_name = $review_token_data['name'];
     $review->reviewer_email = $review_token_data['email'];
-    
-    if (!$review_token_data) {
-      return $response->withJson('review token does not exist', 403);
-    }
 
     $saved_review_model = $this->repo->save_review($review);
-    $this->repo->destroy_invite_token($review->token);
+    $this->repo->invite_token_used($review->token);
 
     return $response->withJson([
       'message' => 'new review saved',
@@ -167,6 +174,8 @@ class ReviewController
 
   /**
    * send review invitation via email 
+   * validate data from client
+   * check email hasn't been previously used for review
    * store review invitation model
    */
   public function send_review_invite($request, $response, $args) {
@@ -176,8 +185,19 @@ class ReviewController
     $invite->email = $request->getParam('email');
     $invite->name = $request->getParam('name');
 
-    if ($val = $this->service->validate_review_invite($invite)) {
+    if ($val = $this->service->validate_review_invite($invite, $user)) {
       return $response->withJson($val, 422);
+    }
+
+    /* check if email has been used in previous review */ 
+    if ($existing_review = $this->repo->check_email_prev_used($invite->email, $user->id)) {
+      if ($existing_review['review_id']) {
+        return $response
+          ->withJson('you have already been reviewed from user with this email', 403);
+      }
+
+      return $response
+        ->withJson('you have already sent a review invite to this email', 403);
     }
 
     $saved_model = $this->repo->save_review_invite_token($user->id, $invite);
@@ -186,6 +206,7 @@ class ReviewController
     $body = $this->service->build_email_body($user->name, $saved_model['token']);
 
     $this->mail_service->send_email($subject, $body, $invite->email, $invite->name);
+    // $this->mail_service->send_email($subject, $body, 'connor@codegood.co', $invite->name);
 
     return $response->withJson('review invite has been saved and sent via email');
   }

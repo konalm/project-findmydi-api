@@ -4,6 +4,8 @@ namespace App\Review;
 
 use Twig_Loader_FileSystem;
 use Twig_Environment;
+use App\Review\ReviewRepo; 
+
 
 
 class ReviewService
@@ -35,15 +37,21 @@ class ReviewService
 
 
   /**
-   * validate data for review invitation
+   * validate data for review invitation 
+   * check properties are not empty
+   * check instructor hasn't sent invite to themselves 
    */
-  public function validate_review_invite($email_data) {
+  public function validate_review_invite($email_data, $instructor) {
     if (!$email_data->email) {
       return 'email is required';
     }
 
     if (!$email_data->name) {
       return 'name is required';
+    }
+
+    if ($email_data->email === $instructor->email) {
+      return 'you can not send a review invite to your own email address';
     }
   }
 
@@ -67,9 +75,6 @@ class ReviewService
   public function build_email_body($instructor_name, $token) {
     $loader = new Twig_Loader_Filesystem(__DIR__ .'/resources/mail-templates');
     $twig = new Twig_Environment($loader, array());
-
-    error_log('review link -->');
-    error_log(getenv('CLIENT_URL') . 'write-review/' . $token);
 
     return $twig->render('reviewInvite.html', 
       array(
