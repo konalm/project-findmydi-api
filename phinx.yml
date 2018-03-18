@@ -16,7 +16,7 @@ environments:
 
     development:
         adapter: pgsql
-        host: 
+        host: localhost
         name: 
         user: 
         pass: ''
