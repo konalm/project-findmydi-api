@@ -2,3 +2,4 @@ vendor/*
 src/uploads/adiLicenceVerification/*
 src/uploads/instructorAvatar/*
 .env
+./phinx.yml
