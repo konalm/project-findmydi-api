@@ -8,7 +8,7 @@ use GuzzleHttp\Exception\RequestException;
 use App\Search\SearchService;
 use App\Instructor\InstructorRepo;
 use App\InstructorCoverage\InstructorCoverageRepo;
-use App\Services\PostcodeService;
+use App\Postcode\PostcodeService;
 
 
 class SearchController

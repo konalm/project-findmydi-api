@@ -12,6 +12,12 @@ require __DIR__ . '/superAdmin.php';
 require __DIR__ . '/../../src/review/ReviewRoutes.php';
 
 
+$app->get('/webhook', function ($request, $response, $args) {
+  error_log('webhook !!');
+
+  return $response->withJson('webhook triggered !!');
+});
+
 $app->get('/user', 'UserController:get_user');
 $app->get('/user-db', 'UserController:get_user_from_db');
 $app->post('/users', 'UserController:save_user');
