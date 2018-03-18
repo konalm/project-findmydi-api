@@ -8,7 +8,8 @@
         "anahkiasen/underscore-php": "^2.0",
         "guzzle/guzzle": "~3.9",
         "phpmailer/phpmailer": "^6.0",
-        "twig/twig": "^2.4"
+        "twig/twig": "^2.4",
+        "robmorgan/phinx": "^0.9.2"
     },
     
     "autoload": {
