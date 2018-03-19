@@ -3,3 +3,4 @@ src/uploads/adiLicenceVerification/*
 src/uploads/instructorAvatar/*
 .env
 phinx.yml
+src/settings.php

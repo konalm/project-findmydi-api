@@ -12,6 +12,12 @@ require __DIR__ . '/superAdmin.php';
 require __DIR__ . '/../../src/review/ReviewRoutes.php';
 
 
+$app->get('/test', function ($request, $response, $args) {
+  
+  return $response->withJson('reached api endpointed');
+});
+
+
 $app->get('/webhook', function ($request, $response, $args) {
   error_log('webhook !!');
 

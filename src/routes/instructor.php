@@ -5,7 +5,6 @@ use Slim\Http\Response;
 
 require __DIR__ . '/../middleware/instAuth.php';
 
-
 $app->get('/instructor', 'InstructorController:get_instructor');
 $app->post('/instructors', 'InstructorController:save');
 
