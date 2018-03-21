@@ -6,7 +6,7 @@ use Slim\Http\Response;
 use App\Services\TokenService;
 
 
-require __DIR__ . '/../middleware/instAuth.php';
+require __DIR__ . '/../middleware/InstAuth.php';
 require __DIR__ . '/instructor.php';
 require __DIR__ . '/superAdmin.php';
 require __DIR__ . '/../../src/review/ReviewRoutes.php';
