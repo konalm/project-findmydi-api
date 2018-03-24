@@ -1,6 +1,7 @@
 vendor/*
 src/uploads/adiLicenceVerification/*
 src/uploads/instructorAvatar/*
+src/settings.php
 .env
 phinx.yml
 src/settings.php
