@@ -16,7 +16,7 @@ return [
         // db settings
         'db' => [
             'host' => 'localhost',
-            'user' => 'postgres',
+            'user' => 'connor',
             'pass' => '$$superstar',
             'dbname' => 'findmydi_dev',
             'port' => '5432'
