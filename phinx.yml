@@ -17,9 +17,9 @@ environments:
     development:
         adapter: pgsql
         host: localhost
-        name: postgres
-        user: 
-        pass: ''
+        name: findmydi_dev
+        user: connor
+        pass: '$$superstar'
         port: 
         charset: utf8
 

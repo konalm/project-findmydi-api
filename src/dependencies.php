@@ -11,6 +11,7 @@ use App\Postcode\PostcodeController;
 use App\GoogleApis\GoogleApisController;
 use App\BetaSignup\BetaSignupController;
 use App\Review\ReviewController;
+use App\Stats\StatsController;
 
 $container = $app->getContainer();
 
@@ -43,6 +44,7 @@ $container['db'] = function ($c) {
 $container['getUploadDir'] = function ($c) {
     return $c['settings']['uploadDir'];
 };
+
 
 
 /**
@@ -90,5 +92,9 @@ $container['BetaSignupController'] = function ($c) {
 
 $container['ReviewController'] = function ($c) {
   return new ReviewController($c); 
+};
+
+$container['StatsController'] = function ($c) {
+  return new StatsController($c);
 };
 

@@ -9,7 +9,8 @@ use App\Services\TokenService;
 require __DIR__ . '/../middleware/InstAuth.php';
 require __DIR__ . '/instructor.php';
 require __DIR__ . '/superAdmin.php';
-require __DIR__ . '/../../src/review/ReviewRoutes.php';
+require __DIR__ . '/../../src/Review/ReviewRoutes.php';
+require __DIR__ . '/../../src/Stats/StatsRoutes.php';
 
 
 $app->get('/test', function ($request, $response, $args) {

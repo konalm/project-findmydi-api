@@ -46,7 +46,10 @@ class ReviewRepo
    */
   public function get_review_invite($invite_id, $instructor_id) {
     $stmt = $this->container->db->prepare(
-      "SELECT id, name, email, token FROM review_invite_tokens WHERE id = ? AND instructor_id = ?"
+      "SELECT id, name, email, token 
+      FROM review_invite_tokens
+      WHERE id = ? 
+        AND instructor_id = ?"
     );
 
     $stmt->execute([$invite_id, $instructor_id]);
