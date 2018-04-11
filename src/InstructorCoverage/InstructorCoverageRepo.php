@@ -172,11 +172,16 @@ class InstructorCoverageRepo
     $stmt = $this->container->db->prepare(
       "SELECT instructors.id, first_name, surname, email, contact_number, gender, 
         hourly_rate, avatar_url, offer, ic.postcode, ic.longitude, ic.latitude, 
-        ic.range
+        ic.range, COUNT(reviews.id) AS review_count, AVG(reviews.rating) AS review_rating 
       FROM instructor_coverage AS ic
       INNER JOIN instructors 
         ON instructors.id = ic.user_id
-      WHERE instructors.verified = true"
+      LEFT JOIN reviews
+        ON reviews.instructor_id = instructors.id
+      WHERE instructors.verified = true
+      GROUP BY instructors.id, first_name, surname, email, contact_number, gender,
+        hourly_rate, avatar_url, offer, ic.postcode, ic.longitude, ic.latitude,
+        ic.range"
     );
 
     try {

@@ -40,7 +40,7 @@ class SearchController
 
       $distance_matrix_url = 
         $this->service-> 
-        build_distance_matrix_request_url($postcode_data, $instructors);
+          build_distance_matrix_request_url($postcode_data, $instructors);
 
       if (!$maps_res = $this->service->google_matrix_api_request($distance_matrix_url)) {
         return $response->withJson('issue sending request to google matrix api', 500);

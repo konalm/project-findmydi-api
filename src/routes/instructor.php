@@ -3,8 +3,7 @@
 use Slim\Http\Request;
 use Slim\Http\Response;
 
-require __DIR__ . '/../middleware/instAuth.php';
-
+require __DIR__ . '/../middleware/InstAuth.php';
 
 $app->get('/instructor', 'InstructorController:get_instructor');
 $app->post('/instructors', 'InstructorController:save');

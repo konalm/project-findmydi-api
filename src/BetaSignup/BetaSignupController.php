@@ -1,10 +1,10 @@
 <?php
 
-
 namespace App\BetaSignup;
 
 use App\BetaSignup\BetaSignupService;
 use App\BetaSignup\BetaSignupRepo;
+
 
 class BetaSignupController 
 {

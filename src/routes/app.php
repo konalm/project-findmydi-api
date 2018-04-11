@@ -6,11 +6,24 @@ use Slim\Http\Response;
 use App\Services\TokenService;
 
 
-require __DIR__ . '/../middleware/instAuth.php';
+require __DIR__ . '/../middleware/InstAuth.php';
 require __DIR__ . '/instructor.php';
 require __DIR__ . '/superAdmin.php';
-require __DIR__ . '/../../src/review/ReviewRoutes.php';
+require __DIR__ . '/../../src/Review/ReviewRoutes.php';
+require __DIR__ . '/../../src/Stats/StatsRoutes.php';
 
+
+$app->get('/test', function ($request, $response, $args) {
+  
+  return $response->withJson('reached api endpointed');
+});
+
+
+$app->get('/webhook', function ($request, $response, $args) {
+  error_log('webhook !!');
+
+  return $response->withJson('webhook triggered !!');
+});
 
 $app->get('/user', 'UserController:get_user');
 $app->get('/user-db', 'UserController:get_user_from_db');
